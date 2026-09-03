@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我们的旅行记忆 - 高清宇宙版</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Noto+Serif+SC:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <style>
+        :root {
+            var(--bg-color): #020308;
+            --gold-main: #d4af37;
+            --glass-bg: rgba(15, 20, 35, 0.6);
+            --glass-border: rgba(212, 175, 55, 0.25);
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #020308;
+            background-image: radial-gradient(circle at center, #0a1026 0%, #020308 100%);
+            font-family: 'Inter', 'Noto Serif SC', sans-serif;
+            color: #F7E1D7; overflow: hidden;
+        }
+
+        #globe-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+
+        .site-header { position: absolute; top: 40px; left: 50%; transform: translateX(-50%); z-index: 10; text-align: center; pointer-events: none; }
+        .site-header h1 { font-weight: 300; letter-spacing: 4px; font-size: 1.5rem; color: #F7E1D7; margin: 0; }
+        .site-header p { font-size: 0.75rem; color: rgba(247, 225, 215, 0.5); letter-spacing: 2px; margin-top: 5px; }
+
+        #mascot-area { position: absolute; bottom: 40px; left: 40px; z-index: 10; }
+        .mascot { width: 60px; height: 60px; background: radial-gradient(circle at 30% 30%, #f3e5ab, var(--gold-main) 70%, #8a7322); border-radius: 50%; box-shadow: 0 0 25px rgba(212, 175, 55, 0.4); cursor: pointer; animation: float 3s ease-in-out infinite; display: flex; justify-content: center; align-items: center; font-weight: 600; font-size: 0.8rem; color: #050814; transition: transform 0.3s ease; }
+        .mascot:hover { transform: scale(1.08); box-shadow: 0 0 35px rgba(212, 175, 55, 0.7); }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+
+        .travel-list { position: absolute; bottom: 80px; left: 0; width: 240px; background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 16px; padding: 12px 0; opacity: 0; visibility: hidden; transform: translateY(15px); transition: all 0.4s ease; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        #mascot-area:hover .travel-list { opacity: 1; visibility: visible; transform: translateY(0); }
+        .travel-item { padding: 12px 20px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; border-left: 2px solid transparent; }
+        .travel-item:hover { background: rgba(212, 175, 55, 0.12); color: var(--gold-main); border-left-color: var(--gold-main); padding-left: 24px; }
+        .travel-date { font-size: 0.65rem; color: rgba(247, 225, 215, 0.45); margin-bottom: 2px; }
+
+        #memory-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -45%) scale(0.95); width: 80%; max-width: 850px; height: 65vh; background: var(--glass-bg); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid var(--glass-border); border-radius: 24px; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6); z-index: 100; display: flex; opacity: 0; visibility: hidden; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: none; }
+        #memory-modal.active { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
+        .modal-close { position: absolute; top: 20px; right: 25px; font-size: 1.8rem; cursor: pointer; color: #F7E1D7; opacity: 0.6; transition: opacity 0.3s; }
+        .modal-close:hover { opacity: 1; color: var(--gold-main); }
+        .modal-content { padding: 45px; display: flex; flex-direction: column; width: 100%; }
+        .modal-title { font-size: 2rem; font-weight: 300; color: var(--gold-main); margin: 0 0 8px 0; }
+        .modal-subtitle { font-size: 0.85rem; color: rgba(247, 225, 215, 0.6); margin-bottom: 25px; }
+        .photo-gallery-placeholder { flex-grow: 1; border: 1px dashed rgba(212, 175, 55, 0.3); border-radius: 12px; display: flex; justify-content: center; align-items: center; color: rgba(247, 225, 215, 0.4); font-weight: 300; background: rgba(0, 0, 0, 0.2); }
+    </style>
+</head>
+<body>
+    <div class="site-header">
+        <h1>OUR JOURNEYS</h1>
+        <p>专属时空纪念册</p>
+    </div>
+    <div id="globe-container"></div>
+    <div id="mascot-area">
+        <div class="travel-list">
+            <div class="travel-item" onclick="flyToLocation(2.1896, 102.2501, '马六甲 (Melaka)', '2026年4月 - 漫步古城，分享一整颗提拉米苏')">
+                <span class="travel-date">2026-04</span>
+                <span>马来西亚 - 马六甲</span>
+            </div>
+            <div class="travel-item" onclick="flyToLocation(3.4236, 101.7932, '云顶高原 (Genting)', '2026年 - 漫步在云雾缭绕的山顶')">
+                <span class="travel-date">2026</span>
+                <span>马来西亚 - 云顶高原</span>
+            </div>
+        </div>
+        <div class="mascot">GUIDE</div>
+    </div>
+    <div id="memory-modal">
+        <div class="modal-close" onclick="closeModal()">&times;</div>
+        <div class="modal-content">
+            <h2 class="modal-title" id="modal-title-text">地点名称</h2>
+            <div class="modal-subtitle" id="modal-subtitle-text">时间与简短回忆...</div>
+            <div class="photo-gallery-placeholder">[ 动态影集排版区 ]</div>
+        </div>
+    </div>
+
+
+
+<script>
+        const container = document.getElementById('globe-container');
+        const scene = new THREE.Scene();
+
+        function latLonToVector3(lat, lon, radius) {
+            const phi = (90 - lat) * (Math.PI / 180);
+            const theta = (lon + 90) * (Math.PI / 180); 
+            const x = -(radius * Math.sin(phi) * Math.cos(theta));
+            const z = (radius * Math.sin(phi) * Math.sin(theta));
+            const y = (radius * Math.cos(phi));
+            return new THREE.Vector3(x, y, z);
+        }
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.copy(latLonToVector3(4.0, 102.0, 320)); 
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.rotateSpeed = 0.8;
+        controls.minDistance = 110; 
+        controls.maxDistance = 450;
+
+        // 星空背景粒子
+        const starGeo = new THREE.BufferGeometry();
+        const starPos = new Float32Array(800 * 3);
+        for(let i = 0; i < 2400; i++) starPos[i] = (Math.random() - 0.5) * 800;
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        const starMat = new THREE.PointsMaterial({ color: 0xf7e1d7, size: 1, transparent: true, opacity: 0.5 });
+        scene.add(new THREE.Points(starGeo, starMat));
+
+        const globeGroup = new THREE.Group();
+        scene.add(globeGroup);
+        const globeRadius = 100;
+
+        // 高清蓝巨星纹理
+        const textureLoader = new THREE.TextureLoader();
+        textureLoader.setCrossOrigin('anonymous'); 
+        const earthTexture = textureLoader.load('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg');
+
+        const sphereGeo = new THREE.SphereGeometry(globeRadius, 64, 64);
+        const sphereMat = new THREE.MeshStandardMaterial({ map: earthTexture, roughness: 0.6, metalness: 0.1 });
+        const innerSphere = new THREE.Mesh(sphereGeo, sphereMat);
+        innerSphere.rotation.y = -Math.PI / 2; 
+        globeGroup.add(innerSphere);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        dirLight.position.set(200, 100, 150);
+        scene.add(dirLight);
+
+        // ==========================================
+        // 核心魔法：自动读取 Notion 数据库
+        // ==========================================
+        const NOTION_SECRET = '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';
+        const DATABASE_ID = '3d0f3549e382801aab70c362b5d55b91';
+        
+        // 使用公共代理跨过浏览器的安全拦截
+        const proxyUrl = 'https://corsproxy.io/?';
+        const notionApiUrl = `https://api.notion.com/v1/databases/${DATABASE_ID}/query`;
+
+        async function fetchNotionData() {
+            try {
+                const response = await fetch(proxyUrl + encodeURIComponent(notionApiUrl), {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${NOTION_SECRET}`,
+                        'Notion-Version': '2022-06-28',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                // 清空默认的占位列表
+                const travelListContainer = document.querySelector('.travel-list');
+                travelListContainer.innerHTML = '';
+
+                // 遍历 Notion 表格的每一行
+                data.results.forEach(page => {
+                    const props = page.properties;
+                    
+                    // 如果地点名称没填，直接跳过这一行
+                    if (!props['地点名称'] || props['地点名称'].title.length === 0) return;
+
+                    // 提取我们在表格里设定的字段
+                    const name = props['地点名称'].title[0].plain_text;
+                    const date = props['日期']?.date?.start || '未知日期';
+                    const lat = props['Lat']?.number;
+                    const lng = props['Lng']?.number;
+                    const memory = props['简短回忆']?.rich_text[0]?.plain_text || '点滴回忆...';
+
+                    // 只有填了经纬度，才在地球上生成光标
+                    if (lat && lng) {
+                        createMarkerOnGlobe(lat, lng);
+                        
+                        // 动态生成吉祥物菜单里的列表项
+                        const itemHTML = `
+                            <div class="travel-item" onclick="flyToLocation(${lat}, ${lng}, '${name}', '${date} - ${memory}')">
+                                <span class="travel-date">${date}</span>
+                                <span>${name}</span>
+                            </div>
+                        `;
+                        travelListContainer.innerHTML += itemHTML;
+                    }
+                });
+
+            } catch (error) {
+                console.error("Notion 数据读取失败，请检查网络或代理：", error);
+                document.querySelector('.travel-list').innerHTML = '<div class="travel-item">数据加载中或连接失败...</div>';
+            }
+        }
+
+        // 在 3D 地球上生成光点的函数
+        function createMarkerOnGlobe(lat, lon) {
+            const pos = latLonToVector3(lat, lon, globeRadius + 0.5);
+            const markerGeo = new THREE.SphereGeometry(0.5, 16, 16);
+            const markerMat = new THREE.MeshBasicMaterial({ color: 0xffd700 });
+            const marker = new THREE.Mesh(markerGeo, markerMat);
+            marker.position.copy(pos);
+            globeGroup.add(marker);
+
+            const ringGeo = new THREE.RingGeometry(0.7, 1.4, 32);
+            const ringMat = new THREE.MeshBasicMaterial({ color: 0xd4af37, side: THREE.DoubleSide, transparent: true, opacity: 0.5 });
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.position.copy(pos);
+            ring.lookAt(new THREE.Vector3(0,0,0)); 
+            globeGroup.add(ring);
+        }
+
+        // 页面加载完毕后，立刻去 Notion 抓取数据
+        fetchNotionData();
+
+        // 飞行与弹窗控制
+        let isAutoRotating = true;
+        function flyToLocation(lat, lon, title, subtitle) {
+            isAutoRotating = false; 
+            const cameraTargetPos = latLonToVector3(lat, lon, globeRadius + 60); 
+            gsap.to(camera.position, { x: cameraTargetPos.x, y: cameraTargetPos.y, z: cameraTargetPos.z, duration: 2.2, ease: "power2.inOut", onUpdate: () => { controls.update(); }, onComplete: () => { openModal(title, subtitle); } });
+        }
+
+        const modal = document.getElementById('memory-modal');
+        function openModal(title, subtitle) {
+            document.getElementById('modal-title-text').innerText = title;
+            document.getElementById('modal-subtitle-text').innerText = subtitle;
+            modal.classList.add('active');
+        }
+        function closeModal() { modal.classList.remove('active'); isAutoRotating = true; }
+        
+        // 渲染循环
+        function animate() { requestAnimationFrame(animate); if (isAutoRotating) globeGroup.rotation.y += 0.0010; controls.update(); renderer.render(scene, camera); }
+        animate();
+        window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+    </script>
+
+
+</body>
+</html>
