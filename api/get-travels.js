@@ -4,7 +4,7 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
 
     const NOTION_SECRET = process.env.NOTION_SECRET || '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';
-    const DATABASE_ID = process.env.DATABASE_ID || '3d0f3549e382801aab70c362b5d55b91';
+    const DATABASE_ID = process.env.DATABASE_ID || '3d0f3549e38280259f19c1886e86d22a';
 
     try {
         // 后端直接请求 Notion API（服务器之间没有 CORS 限制）
