@@ -143,40 +143,35 @@
 
 
 
-        // 核心魔法：无代理直连 Notion 公开数据库
-        // ==========================================
-        const DATABASE_ID = '3d0f3549e382801aab70c362b5d55b91';
-        // 使用前端专用的开源 Notion 解析接口，彻底绕过跨域拦截
-        const notionApiUrl = `https://notion-api.splitbee.io/v1/table/${DATABASE_ID}`;
 
-        async function fetchNotionData() {
+
+
+
+async function fetchNotionData() {
             try {
-                const response = await fetch(notionApiUrl);
+                // 直接请求我们自己部署在 Vercel 上的后端接口！
+                const response = await fetch('/api/get-travels');
                 const data = await response.json();
                 
+                if (!data.results) {
+                    console.error("Notion 数据返回格式有误：", data);
+                    return;
+                }
+
                 const travelListContainer = document.querySelector('.travel-list');
                 travelListContainer.innerHTML = '';
 
-                // 遍历数据并渲染
-                data.forEach(row => {
-                    // Splitbee 接口会自动帮你把复杂的层级剥开，直接用列名读取即可
-                    const name = row['地点名称'];
-                    if (!name) return; // 如果这一行没写地名，直接跳过
+                data.results.forEach(page => {
+                    const props = page.properties;
+                    if (!props['地点名称'] || props['地点名称'].title.length === 0) return;
 
-                    // 处理日期和文案
-                    let date = '未知日期';
-                    if (row['日期']) {
-                        // 兼容 Notion 日期的不同格式
-                        date = typeof row['日期'] === 'object' ? row['日期'].start_date : row['日期'];
-                    }
-                    const memory = row['简短回忆'] || '点滴回忆...';
-                    
-                    // 提取经纬度
-                    const lat = parseFloat(row['Lat']);
-                    const lng = parseFloat(row['Lng']);
+                    const name = props['地点名称'].title[0].plain_text;
+                    const date = props['日期']?.date?.start || '未知日期';
+                    const lat = props['Lat']?.number;
+                    const lng = props['Lng']?.number;
+                    const memory = props['简短回忆']?.rich_text[0]?.plain_text || '点滴回忆...';
 
-                    // 如果经纬度是有效的数字，则在地球上种下光标并生成菜单
-                    if (!isNaN(lat) && !isNaN(lng)) {
+                    if (lat && lng) {
                         createMarkerOnGlobe(lat, lng);
                         
                         const itemHTML = `
@@ -190,10 +185,33 @@
                 });
 
             } catch (error) {
-                console.error("❌ API 连接失败：", error);
-                document.querySelector('.travel-list').innerHTML = '<div class="travel-item">数据加载失败，请检查网络...</div>';
+                console.error("❌ 后端连接失败：", error);
+                document.querySelector('.travel-list').innerHTML = '<div class="travel-item">实时数据加载失败...</div>';
             }
         }
+
+        // 启动加载
+        fetchNotionData();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+       
 
         // 在 3D 地球上生成光点的函数
         function createMarkerOnGlobe(lat, lon) {
