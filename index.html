@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我们的旅行记忆 - 高清宇宙版</title>
+    <title>我们的旅行记忆 - 沉浸式时空纪念册</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Noto+Serif+SC:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -11,9 +11,8 @@
 
     <style>
         :root {
-            var(--bg-color): #020308;
             --gold-main: #d4af37;
-            --glass-bg: rgba(15, 20, 35, 0.6);
+            --glass-bg: rgba(15, 20, 35, 0.75);
             --glass-border: rgba(212, 175, 55, 0.25);
         }
 
@@ -32,7 +31,7 @@
         .site-header p { font-size: 0.75rem; color: rgba(247, 225, 215, 0.5); letter-spacing: 2px; margin-top: 5px; }
 
         #mascot-area { position: absolute; bottom: 40px; left: 40px; z-index: 10; }
-        .mascot { width: 60px; height: 60px; background: radial-gradient(circle at 30% 30%, #f3e5ab, var(--gold-main) 70%, #8a7322); border-radius: 50%; box-shadow: 0 0 25px rgba(212, 175, 55, 0.4); cursor: pointer; animation: float 3s ease-in-out infinite; display: flex; justify-content: center; align-items: center; font-weight: 600; font-size: 0.8rem; color: #050814; transition: transform 0.3s ease; }
+        .mascot { width: 60px; height: 60px; background: radial-gradient(circle at 30% 30%, #f3e5ab, var(--gold-main) 70%, #8a7322); border-radius: 50%; box-shadow: 0 0 25px rgba(212, 175, 55, 0.4); cursor: pointer; animation: float 3s ease-in-out infinite; display: flex; justify-content: center; align-items: center; font-weight: 600; font-size: 0.8rem; color: #050814; transition: transform 0.3s ease; user-select: none; }
         .mascot:hover { transform: scale(1.08); box-shadow: 0 0 35px rgba(212, 175, 55, 0.7); }
         @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
 
@@ -42,14 +41,42 @@
         .travel-item:hover { background: rgba(212, 175, 55, 0.12); color: var(--gold-main); border-left-color: var(--gold-main); padding-left: 24px; }
         .travel-date { font-size: 0.65rem; color: rgba(247, 225, 215, 0.45); margin-bottom: 2px; }
 
-        #memory-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -45%) scale(0.95); width: 80%; max-width: 850px; height: 65vh; background: var(--glass-bg); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid var(--glass-border); border-radius: 24px; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6); z-index: 100; display: flex; opacity: 0; visibility: hidden; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: none; }
+        /* 四部分切换的高级弹窗样式 */
+        #memory-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -45%) scale(0.95); width: 85%; max-width: 950px; height: 75vh; background: var(--glass-bg); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid var(--glass-border); border-radius: 24px; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7); z-index: 100; display: flex; opacity: 0; visibility: hidden; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: none; overflow: hidden; }
         #memory-modal.active { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
-        .modal-close { position: absolute; top: 20px; right: 25px; font-size: 1.8rem; cursor: pointer; color: #F7E1D7; opacity: 0.6; transition: opacity 0.3s; }
+        
+        .modal-close { position: absolute; top: 20px; right: 25px; font-size: 1.8rem; cursor: pointer; color: #F7E1D7; opacity: 0.6; transition: opacity 0.3s; z-index: 10; }
         .modal-close:hover { opacity: 1; color: var(--gold-main); }
-        .modal-content { padding: 45px; display: flex; flex-direction: column; width: 100%; }
-        .modal-title { font-size: 2rem; font-weight: 300; color: var(--gold-main); margin: 0 0 8px 0; }
-        .modal-subtitle { font-size: 0.85rem; color: rgba(247, 225, 215, 0.6); margin-bottom: 25px; }
-        .photo-gallery-placeholder { flex-grow: 1; border: 1px dashed rgba(212, 175, 55, 0.3); border-radius: 12px; display: flex; justify-content: center; align-items: center; color: rgba(247, 225, 215, 0.4); font-weight: 300; background: rgba(0, 0, 0, 0.2); }
+
+        /* 弹窗左侧：导航切换栏 */
+        .modal-sidebar { width: 260px; border-right: 1px solid rgba(212, 175, 55, 0.15); padding: 40px 20px; display: flex; flex-direction: column; background: rgba(0, 0, 0, 0.2); }
+        .modal-location-title { font-size: 1.4rem; font-weight: 300; color: var(--gold-main); margin-bottom: 5px; }
+        .modal-location-date { font-size: 0.75rem; color: rgba(247, 225, 215, 0.5); margin-bottom: 30px; }
+        
+        .tab-btn { padding: 14px 18px; margin-bottom: 8px; border-radius: 12px; font-size: 0.85rem; cursor: pointer; color: rgba(247, 225, 215, 0.7); transition: all 0.3s; border: 1px solid transparent; text-align: left; background: transparent; }
+        .tab-btn:hover { background: rgba(212, 175, 55, 0.08); color: var(--gold-main); }
+        .tab-btn.active { background: rgba(212, 175, 55, 0.15); color: var(--gold-main); border-color: rgba(212, 175, 55, 0.3); font-weight: 600; }
+
+        /* 弹窗右侧：内容动态展示区 */
+        .modal-body { flex-grow: 1; padding: 40px; overflow-y: auto; position: relative; }
+        .tab-content { display: none; animation: fadeIn 0.4s ease forwards; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 各种媒体内容的精致排版 */
+        .part1-container { display: flex; gap: 30px; align-items: center; }
+        .part1-photo { width: 45%; border-radius: 12px; border: 1px solid var(--glass-border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-height: 300px; object-fit: cover; }
+        .part1-text { flex-grow: 1; font-size: 0.95rem; line-height: 1.8; color: rgba(247, 225, 215, 0.9); font-weight: 300; }
+
+        .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .media-card { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 12px; overflow: hidden; padding: 10px; text-align: center; }
+        .media-card img, .media-card iframe { width: 100%; border-radius: 8px; object-fit: cover; }
+        .media-card img { height: 160px; }
+        
+        .png-showcase { display: flex; flex-wrap: wrap; gap: 25px; justify-content: center; align-items: center; padding: 20px; }
+        .png-item { width: 110px; height: 110px; background: rgba(255, 255, 255, 0.05); border: 1px dashed rgba(212, 175, 55, 0.4); border-radius: 50%; display: flex; justify-content: center; align-items: center; padding: 10px; transition: transform 0.3s; }
+        .png-item:hover { transform: scale(1.1); background: rgba(212, 175, 55, 0.1); }
+        .png-item img { max-width: 80%; max-height: 80%; object-fit: contain; }
     </style>
 </head>
 <body>
@@ -57,32 +84,64 @@
         <h1>OUR JOURNEYS</h1>
         <p>专属时空纪念册</p>
     </div>
+    
     <div id="globe-container"></div>
+    
     <div id="mascot-area">
         <div class="travel-list">
-            <div class="travel-item" onclick="flyToLocation(2.1896, 102.2501, '马六甲 (Melaka)', '2026年4月 - 漫步古城，分享一整颗提拉米苏')">
-                <span class="travel-date">2026-04</span>
-                <span>马来西亚 - 马六甲</span>
-            </div>
-            <div class="travel-item" onclick="flyToLocation(3.4236, 101.7932, '云顶高原 (Genting)', '2026年 - 漫步在云雾缭绕的山顶')">
-                <span class="travel-date">2026</span>
-                <span>马来西亚 - 云顶高原</span>
-            </div>
+            <!-- 动态生成的列表会注入这里 -->
         </div>
         <div class="mascot">GUIDE</div>
     </div>
+
+    <!-- 升级后的四部分联动弹窗 -->
     <div id="memory-modal">
         <div class="modal-close" onclick="closeModal()">&times;</div>
-        <div class="modal-content">
-            <h2 class="modal-title" id="modal-title-text">地点名称</h2>
-            <div class="modal-subtitle" id="modal-subtitle-text">时间与简短回忆...</div>
-            <div class="photo-gallery-placeholder">[ 动态影集排版区 ]</div>
+        
+        <!-- 左侧切换栏 -->
+        <div class="modal-sidebar">
+            <div class="modal-location-title" id="modal-title">地点名称</div>
+            <div class="modal-location-date" id="modal-date">日期</div>
+            
+            <button class="tab-btn active" onclick="switchTab('part1')">✨ 1. 合照与回忆</button>
+            <button class="tab-btn" onclick="switchTab('part2')">📸 2. 地方风光</button>
+            <button class="tab-btn" onclick="switchTab('part3')">🎬 3. Instagram Vlog</button>
+            <button class="tab-btn" onclick="switchTab('part4')">🏷️ 4. 纪念小物件</button>
+        </div>
+
+        <!-- 右侧内容展示区 -->
+        <div class="modal-body">
+            <!-- Part 1: 合照 + 描述 -->
+            <div id="part1" class="tab-content active">
+                <div class="part1-container" id="p1-content">
+                    <!-- 动态注入 -->
+                </div>
+            </div>
+
+            <!-- Part 2: 地方风景照片 -->
+            <div id="part2" class="tab-content">
+                <div class="media-grid" id="p2-content">
+                    <!-- 动态注入多张风景照 -->
+                </div>
+            </div>
+
+            <!-- Part 3: Instagram Reels Vlog -->
+            <div id="part3" class="tab-content">
+                <div class="media-grid" id="p3-content">
+                    <!-- 动态注入 Reels 视频 -->
+                </div>
+            </div>
+
+            <!-- Part 4: PNG 小物件/冰箱贴/徽章 -->
+            <div id="part4" class="tab-content">
+                <div class="png-showcase" id="p4-content">
+                    <!-- 动态注入 PNG 图标 -->
+                </div>
+            </div>
         </div>
     </div>
 
-
-
-<script>
+    <script>
         const container = document.getElementById('globe-container');
         const scene = new THREE.Scene();
 
@@ -110,7 +169,7 @@
         controls.minDistance = 110; 
         controls.maxDistance = 450;
 
-        // 星空背景粒子
+        // 星空背景
         const starGeo = new THREE.BufferGeometry();
         const starPos = new Float32Array(800 * 3);
         for(let i = 0; i < 2400; i++) starPos[i] = (Math.random() - 0.5) * 800;
@@ -122,11 +181,9 @@
         scene.add(globeGroup);
         const globeRadius = 100;
 
-        // 高清蓝巨星纹理
         const textureLoader = new THREE.TextureLoader();
         textureLoader.setCrossOrigin('anonymous'); 
         const earthTexture = textureLoader.load('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg');
-
         const sphereGeo = new THREE.SphereGeometry(globeRadius, 64, 64);
         const sphereMat = new THREE.MeshStandardMaterial({ map: earthTexture, roughness: 0.6, metalness: 0.1 });
         const innerSphere = new THREE.Mesh(sphereGeo, sphereMat);
@@ -139,43 +196,35 @@
         dirLight.position.set(200, 100, 150);
         scene.add(dirLight);
 
-        // ==========================================
+        // 全局存储 Notion 拉取到的完整数据
+        let allTravelData = [];
 
-
-
-
-
-
-
-async function fetchNotionData() {
+        // 从 Vercel 后端安全拉取 Notion 数据
+        async function fetchNotionData() {
             try {
-                // 直接请求我们自己部署在 Vercel 上的后端接口！
                 const response = await fetch('/api/get-travels');
                 const data = await response.json();
                 
-                if (!data.results) {
-                    console.error("Notion 数据返回格式有误：", data);
-                    return;
-                }
+                if (!data.results) return;
 
+                allTravelData = data.results;
                 const travelListContainer = document.querySelector('.travel-list');
                 travelListContainer.innerHTML = '';
 
-                data.results.forEach(page => {
+                allTravelData.forEach((page, index) => {
                     const props = page.properties;
-                    if (!props['地点名称'] || props['地点名称'].title.length === 0) return;
+                    if (!props['name'] || props['name'].title.length === 0) return;
 
-                    const name = props['地点名称'].title[0].plain_text;
-                    const date = props['日期']?.date?.start || '未知日期';
-                    const lat = props['Lat']?.number;
-                    const lng = props['Lng']?.number;
-                    const memory = props['简短回忆']?.rich_text[0]?.plain_text || '点滴回忆...';
+                    const name = props['name'].title[0].plain_text;
+                    const date = props['date']?.date?.start || '未知日期';
+                    const lat = parseFloat(props['lat']?.number);
+                    const lng = parseFloat(props['lng']?.number);
 
-                    if (lat && lng) {
+                    if (!isNaN(lat) && !isNaN(lng)) {
                         createMarkerOnGlobe(lat, lng);
                         
                         const itemHTML = `
-                            <div class="travel-item" onclick="flyToLocation(${lat}, ${lng}, '${name}', '${date} - ${memory}')">
+                            <div class="travel-item" onclick="flyToLocation(${lat}, ${lng}, ${index})">
                                 <span class="travel-date">${date}</span>
                                 <span>${name}</span>
                             </div>
@@ -183,37 +232,11 @@ async function fetchNotionData() {
                         travelListContainer.innerHTML += itemHTML;
                     }
                 });
-
             } catch (error) {
                 console.error("❌ 后端连接失败：", error);
-                document.querySelector('.travel-list').innerHTML = '<div class="travel-item">实时数据加载失败...</div>';
             }
         }
 
-        // 启动加载
-        fetchNotionData();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-       
-
-        // 在 3D 地球上生成光点的函数
         function createMarkerOnGlobe(lat, lon) {
             const pos = latLonToVector3(lat, lon, globeRadius + 0.5);
             const markerGeo = new THREE.SphereGeometry(0.5, 16, 16);
@@ -230,31 +253,111 @@ async function fetchNotionData() {
             globeGroup.add(ring);
         }
 
-        // 页面加载完毕后，立刻去 Notion 抓取数据
         fetchNotionData();
 
-        // 飞行与弹窗控制
         let isAutoRotating = true;
-        function flyToLocation(lat, lon, title, subtitle) {
+        function flyToLocation(lat, lon, dataIndex) {
             isAutoRotating = false; 
             const cameraTargetPos = latLonToVector3(lat, lon, globeRadius + 60); 
-            gsap.to(camera.position, { x: cameraTargetPos.x, y: cameraTargetPos.y, z: cameraTargetPos.z, duration: 2.2, ease: "power2.inOut", onUpdate: () => { controls.update(); }, onComplete: () => { openModal(title, subtitle); } });
+            gsap.to(camera.position, { 
+                x: cameraTargetPos.x, y: cameraTargetPos.y, z: cameraTargetPos.z, 
+                duration: 2.2, ease: "power2.inOut", 
+                onUpdate: () => { controls.update(); }, 
+                onComplete: () => { openModal(dataIndex); } 
+            });
         }
 
+        // 渲染弹窗内容
         const modal = document.getElementById('memory-modal');
-        function openModal(title, subtitle) {
-            document.getElementById('modal-title-text').innerText = title;
-            document.getElementById('modal-subtitle-text').innerText = subtitle;
+        function openModal(index) {
+            const row = allTravelData[index];
+            const props = row.properties;
+            
+            const name = props['name']?.title[0]?.plain_text || '难忘地点';
+            const date = props['date']?.date?.start || '';
+            const memory = props['memory']?.rich_text[0]?.plain_text || '留下的美好回忆...';
+            
+            // 假设你在 Notion 里配置了以下多媒体字段（你可以根据需要自由命名或扩展）
+            // 1. 合照链接
+            const couplePhoto = props['couplePhoto']?.url || 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600';
+            // 2. 风景照片集 (逗号分隔的URL字符串，或者多张图)
+            const sceneryPhotos = props['sceneryPhotos']?.rich_text[0]?.plain_text ? props['sceneryPhotos'].rich_text[0].plain_text.split(',') : [
+                'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500',
+                'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=500'
+            ];
+            // 3. Instagram Reels 链接列表
+            const reels = props['reels']?.rich_text[0]?.plain_text ? props['reels'].rich_text[0].plain_text.split(',') : [];
+            // 4. PNG 贴纸/纪念物图标链接列表
+            const pngStickers = props['pngStickers']?.rich_text[0]?.plain_text ? props['pngStickers'].rich_text[0].plain_text.split(',') : [
+                'https://cdn-icons-png.flaticon.com/512/854/854878.png', 
+                'https://cdn-icons-png.flaticon.com/512/2933/2933116.png'
+            ];
+
+            // 填充头部
+            document.getElementById('modal-title').innerText = name;
+            document.getElementById('modal-date').innerText = date;
+
+            // 填充 Part 1: 合照 + 回忆
+            document.getElementById('p1-content').innerHTML = `
+                <img src="${couplePhoto}" class="part1-photo" alt="合照">
+                <div class="part1-text">${memory}</div>
+            `;
+
+            // 填充 Part 2: 风景照片 (支持任意数量滚动)
+            let p2HTML = '';
+            sceneryPhotos.forEach(url => {
+                p2HTML += `<div class="media-card"><img src="${url.trim()}" alt="风景"></div>`;
+            });
+            document.getElementById('p2-content').innerHTML = p2HTML || '<div style="color:rgba(255,255,255,0.4)">暂无风光照片</div>';
+
+            // 填充 Part 3: Instagram Reels
+            let p3HTML = '';
+            reels.forEach(url => {
+                p3HTML += `<div class="media-card"><iframe src="${url.trim()}/embed" width="100%" height="220" frameborder="0" scrolling="no" allowtransparency="true"></iframe></div>`;
+            });
+            document.getElementById('p3-content').innerHTML = p3HTML || '<div style="color:rgba(255,255,255,0.4)">暂无 Reels 视频记录</div>';
+
+            // 填充 Part 4: PNG 小物件/徽章
+            let p4HTML = '';
+            pngStickers.forEach(url => {
+                p4HTML += `<div class="png-item"><img src="${url.trim()}" alt="纪念物件"></div>`;
+            });
+            document.getElementById('p4-content').innerHTML = p4HTML || '<div style="color:rgba(255,255,255,0.4)">暂无专属纪念物件</div>';
+
+            // 默认打开时展示第一栏
+            switchTab('part1');
             modal.classList.add('active');
         }
-        function closeModal() { modal.classList.remove('active'); isAutoRotating = true; }
-        
-        // 渲染循环
-        function animate() { requestAnimationFrame(animate); if (isAutoRotating) globeGroup.rotation.y += 0.0010; controls.update(); renderer.render(scene, camera); }
+
+        // 左侧菜单切换逻辑
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            
+            // 找到对应的按钮并高亮
+            event && event.currentTarget && event.currentTarget.classList.add('active');
+        }
+
+        function closeModal() { 
+            modal.classList.remove('active'); 
+            isAutoRotating = true; 
+        }
+
+        function animate() { 
+            requestAnimationFrame(animate); 
+            if (isAutoRotating) globeGroup.rotation.y += 0.0010; 
+            controls.update(); 
+            renderer.render(scene, camera); 
+        }
         animate();
-        window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+
+        window.addEventListener('resize', () => { 
+            camera.aspect = window.innerWidth / window.innerHeight; 
+            camera.updateProjectionMatrix(); 
+            renderer.setSize(window.innerWidth, window.innerHeight); 
+        });
     </script>
-
-
 </body>
 </html>
