@@ -77,6 +77,77 @@
         .png-item { width: 110px; height: 110px; background: rgba(255, 255, 255, 0.05); border: 1px dashed rgba(212, 175, 55, 0.4); border-radius: 50%; display: flex; justify-content: center; align-items: center; padding: 10px; transition: transform 0.3s; }
         .png-item:hover { transform: scale(1.1); background: rgba(212, 175, 55, 0.1); }
         .png-item img { max-width: 80%; max-height: 80%; object-fit: contain; }
+		
+		
+		
+		/* ================= 优化新增样式 ================= */
+        
+        /* 全局照片/视频放大查看器 (Lightbox) */
+        #media-lightbox {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9); z-index: 9999;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden; transition: all 0.3s ease;
+        }
+        #media-lightbox.active { opacity: 1; visibility: visible; }
+        .lightbox-close { position: absolute; top: 30px; right: 40px; font-size: 2.5rem; color: #fff; cursor: pointer; opacity: 0.7; transition: opacity 0.3s; }
+        .lightbox-close:hover { opacity: 1; color: var(--gold-main); }
+        #lightbox-img { max-width: 90%; max-height: 90%; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); display: none; }
+        #lightbox-iframe { width: 90%; max-width: 420px; height: 85vh; border-radius: 16px; background: #000; display: none; }
+
+        /* Part 1 轮播与居中文案特效 */
+        .p1-carousel-container {
+            position: relative; width: 100%; max-width: 550px; margin: 0 auto;
+            border-radius: 16px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+            border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center;
+            background: #000;
+        }
+        .p1-carousel-container img { width: 100%; display: block; opacity: 0.8; transition: opacity 0.4s; }
+        
+        /* 永远居中在照片上的回忆文案 */
+        .p1-memory-overlay {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 85%; text-align: center; font-size: 1.15rem; font-weight: 400; line-height: 1.7;
+            color: #ffffff; text-shadow: 0 2px 15px rgba(0,0,0,0.9), 0 0 40px rgba(0,0,0,0.6);
+            pointer-events: none; /* 核心：让鼠标穿透文字，不影响点击图片 */
+            z-index: 2;
+        }
+
+        /* 轮播控制按钮 */
+        .p1-nav-btn {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            background: rgba(0,0,0,0.4); color: white; border: none; font-size: 1.5rem;
+            padding: 10px 15px; cursor: pointer; transition: background 0.3s; z-index: 3;
+        }
+        .p1-nav-btn:hover { background: var(--gold-main); }
+        .p1-nav-btn.left { left: 0; border-radius: 0 8px 8px 0; }
+        .p1-nav-btn.right { right: 0; border-radius: 8px 0 0 8px; }
+        
+        /* 放大按钮 */
+        .p1-zoom-btn {
+            position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 12px;
+            border-radius: 8px; cursor: pointer; font-size: 1rem; z-index: 3; transition: all 0.3s;
+        }
+        .p1-zoom-btn:hover { background: var(--gold-main); transform: scale(1.1); }
+
+        /* 视频遮罩层（为了捕获点击实现放大） */
+        .iframe-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.15); cursor: zoom-in; transition: all 0.3s; z-index: 10;
+        }
+        .iframe-overlay:hover { background: rgba(0,0,0,0.4); }
+        .iframe-overlay::after {
+            content: '🔍 点击全屏播放'; position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); color: white; opacity: 0; font-weight: bold;
+            transition: opacity 0.3s; text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+        }
+        .iframe-overlay:hover::after { opacity: 1; }
+		
+		
+		
+		
+		
     </style>
 </head>
 <body>
@@ -140,7 +211,14 @@
             </div>
         </div>
     </div>
-
+	
+<!-- 全局放大查看器 (Lightbox) -->
+    <div id="media-lightbox">
+        <div class="lightbox-close" onclick="closeLightbox()">&times;</div>
+        <img id="lightbox-img" src="" alt="放大照片">
+        <iframe id="lightbox-iframe" src="" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen></iframe>
+    </div>
+	
     <script>
         const container = document.getElementById('globe-container');
         const scene = new THREE.Scene();
@@ -266,7 +344,17 @@
                 onComplete: () => { openModal(dataIndex); } 
             });
         }
-// 渲染弹窗内容：精准读取 Notion 的 Files & media 专属列
+		
+		
+		
+		
+		
+		
+		// ================= 全局状态控制 =================
+        let currentP1Index = 0;
+        let p1PhotosArray = [];
+        
+        // 渲染弹窗内容 (增强了合照轮播与放大功能)
         const modal = document.getElementById('memory-modal');
         function openModal(index) {
             const row = allTravelData[index];
@@ -276,67 +364,133 @@
             const date = props['date']?.date?.start || '';
             const memory = props['memory']?.rich_text[0]?.plain_text || '留下的美好回忆...';
             
-            // 核心助手：专门从 Notion 的 Files & media 列提取所有上传的图片链接
             function getUploadedImages(propName) {
                 const prop = props[propName];
                 if (!prop || !prop.files) return [];
                 return prop.files.map(f => f.file?.url || f.external?.url).filter(Boolean);
             }
 
-            // 分别抓取四个 Part 的专属内容
-            const part1Photos = getUploadedImages('part1_photos');
+            // 获取数据
+            p1PhotosArray = getUploadedImages('part1_photos');
             const part2Photos = getUploadedImages('part2_photos');
             const part4Pngs   = getUploadedImages('part4_pngs');
-            
             const reelsText = props['part3_reels']?.rich_text[0]?.plain_text || '';
             const part3Reels = reelsText ? reelsText.split(',') : [];
 
-            // --- 开始填充 HTML ---
+            // 防呆：如果没有上传 Part 1 照片，给一张默认图
+            if (p1PhotosArray.length === 0) p1PhotosArray = ['https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600'];
+            currentP1Index = 0; // 每次打开归零
+
+            // --- 填充 HTML ---
             document.getElementById('modal-title').innerText = name;
             document.getElementById('modal-date').innerText = date;
 
-            // Part 1: 合照 + 回忆 (支持多张合照上下滑动)
-            let p1HTML = '';
-            part1Photos.forEach(url => {
-                p1HTML += `<img src="${url}" alt="合照" style="width:100%; border-radius:12px; border:1px solid var(--glass-border); margin-bottom:15px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">`;
-            });
-            document.getElementById('p1-content').innerHTML = `
-                <div style="width: 45%; max-height: 450px; overflow-y: auto; padding-right: 15px; flex-shrink: 0;">
-                    ${p1HTML || '<div style="color:rgba(255,255,255,0.4)">暂无合照</div>'}
+            // Part 1: 图片居中、文案盖在上方、轮播控制
+            let p1HTML = `
+                <div class="p1-carousel-container">
+                    <img id="p1-main-img" src="${p1PhotosArray[0]}" alt="合照">
+                    <div class="p1-memory-overlay">${memory}</div>
+                    <button class="p1-zoom-btn" onclick="openLightbox('image', p1PhotosArray[currentP1Index])">🔍 放大查看</button>
+                    
+                    ${p1PhotosArray.length > 1 ? `
+                        <button class="p1-nav-btn left" onclick="changeP1Photo(-1)">&#10094;</button>
+                        <button class="p1-nav-btn right" onclick="changeP1Photo(1)">&#10095;</button>
+                    ` : ''}
                 </div>
-                <div class="part1-text">${memory}</div>
             `;
+            // 因为 Part 1 改为纯居中卡片了，可以覆盖原有的分栏样式
+            document.getElementById('p1-content').innerHTML = p1HTML;
+            document.getElementById('p1-content').style.justifyContent = 'center';
 
-            // Part 2: 风景照片 (网格排版，支持无限张)
+            // Part 2: 风景照片 (点击触发放大)
             let p2HTML = '';
             part2Photos.forEach(url => {
-                p2HTML += `<div class="media-card"><img src="${url}" alt="风景"></div>`;
+                p2HTML += `<div class="media-card" style="cursor: zoom-in;" onclick="openLightbox('image', '${url}')"><img src="${url}" alt="风景"></div>`;
             });
             document.getElementById('p2-content').innerHTML = p2HTML || '<div style="color:rgba(255,255,255,0.4)">暂无风光照片</div>';
 
-            // Part 3: Instagram Vlog
+            // Part 3: Instagram Vlog (增加遮罩层捕获点击)
             let p3HTML = '';
             part3Reels.forEach(url => {
                 let embedUrl = url.trim();
-                // 自动补全 embed 格式
-                if(embedUrl.includes('instagram.com') && !embedUrl.includes('embed')) {
-                    embedUrl = embedUrl.replace(/\/?$/, '/embed');
-                }
-                p3HTML += `<div class="media-card"><iframe src="${embedUrl}" width="100%" height="220" frameborder="0" scrolling="no" allowtransparency="true"></iframe></div>`;
+                if(embedUrl.includes('instagram.com') && !embedUrl.includes('embed')) embedUrl = embedUrl.replace(/\/?$/, '/embed');
+                
+                p3HTML += `
+                <div class="media-card" style="position: relative;">
+                    <iframe src="${embedUrl}" width="100%" height="220" frameborder="0" scrolling="no" allowtransparency="true"></iframe>
+                    <div class="iframe-overlay" onclick="openLightbox('video', '${embedUrl}')"></div>
+                </div>`;
             });
             document.getElementById('p3-content').innerHTML = p3HTML || '<div style="color:rgba(255,255,255,0.4)">暂无 Vlog 视频</div>';
 
-            // Part 4: PNG 小物件
+            // Part 4 保持不变
             let p4HTML = '';
             part4Pngs.forEach(url => {
                 p4HTML += `<div class="png-item"><img src="${url}" alt="纪念物件"></div>`;
             });
             document.getElementById('p4-content').innerHTML = p4HTML || '<div style="color:rgba(255,255,255,0.4)">暂无专属纪念物件</div>';
 
-            // 默认打开时展示第一栏
             switchTab('part1');
             modal.classList.add('active');
         }
+
+        // --- 新增：Part 1 轮播切换逻辑 ---
+        function changeP1Photo(direction) {
+            currentP1Index += direction;
+            if (currentP1Index < 0) currentP1Index = p1PhotosArray.length - 1;
+            if (currentP1Index >= p1PhotosArray.length) currentP1Index = 0;
+            
+            const imgEl = document.getElementById('p1-main-img');
+            imgEl.style.opacity = 0; // 淡出过渡
+            setTimeout(() => {
+                imgEl.src = p1PhotosArray[currentP1Index];
+                imgEl.style.opacity = 1; // 淡入新图
+            }, 300);
+        }
+
+        // --- 新增：全局沉浸式放大 (Lightbox) 逻辑 ---
+        const lightbox = document.getElementById('media-lightbox');
+        const lbImg = document.getElementById('lightbox-img');
+        const lbIframe = document.getElementById('lightbox-iframe');
+
+        function openLightbox(type, url) {
+            if (type === 'image') {
+                lbImg.src = url;
+                lbImg.style.display = 'block';
+                lbIframe.style.display = 'none';
+            } else if (type === 'video') {
+                lbIframe.src = url;
+                lbIframe.style.display = 'block';
+                lbImg.style.display = 'none';
+            }
+            lightbox.classList.add('active');
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            setTimeout(() => {
+                lbImg.src = '';
+                lbIframe.src = '';
+            }, 300);
+        }
+
+        // 点击背景也能关闭放大图层
+        lightbox.addEventListener('click', function(e) {
+            if (e.target === lightbox) closeLightbox();
+        });
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
         // 左侧菜单切换逻辑
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -367,5 +521,8 @@
             renderer.setSize(window.innerWidth, window.innerHeight); 
         });
     </script>
+	
+	
+	
 </body>
 </html>
