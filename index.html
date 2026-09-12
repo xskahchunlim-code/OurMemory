@@ -266,8 +266,7 @@
                 onComplete: () => { openModal(dataIndex); } 
             });
         }
-
-        // 渲染弹窗内容
+// 渲染弹窗内容：精准读取 Notion 的 Files & media 专属列
         const modal = document.getElementById('memory-modal');
         function openModal(index) {
             const row = allTravelData[index];
@@ -277,50 +276,60 @@
             const date = props['date']?.date?.start || '';
             const memory = props['memory']?.rich_text[0]?.plain_text || '留下的美好回忆...';
             
-            // 假设你在 Notion 里配置了以下多媒体字段（你可以根据需要自由命名或扩展）
-            // 1. 合照链接
-            const couplePhoto = props['couplePhoto']?.url || 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600';
-            // 2. 风景照片集 (逗号分隔的URL字符串，或者多张图)
-            const sceneryPhotos = props['sceneryPhotos']?.rich_text[0]?.plain_text ? props['sceneryPhotos'].rich_text[0].plain_text.split(',') : [
-                'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500',
-                'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=500'
-            ];
-            // 3. Instagram Reels 链接列表
-            const reels = props['reels']?.rich_text[0]?.plain_text ? props['reels'].rich_text[0].plain_text.split(',') : [];
-            // 4. PNG 贴纸/纪念物图标链接列表
-            const pngStickers = props['pngStickers']?.rich_text[0]?.plain_text ? props['pngStickers'].rich_text[0].plain_text.split(',') : [
-                'https://cdn-icons-png.flaticon.com/512/854/854878.png', 
-                'https://cdn-icons-png.flaticon.com/512/2933/2933116.png'
-            ];
+            // 核心助手：专门从 Notion 的 Files & media 列提取所有上传的图片链接
+            function getUploadedImages(propName) {
+                const prop = props[propName];
+                if (!prop || !prop.files) return [];
+                return prop.files.map(f => f.file?.url || f.external?.url).filter(Boolean);
+            }
 
-            // 填充头部
+            // 分别抓取四个 Part 的专属内容
+            const part1Photos = getUploadedImages('part1_photos');
+            const part2Photos = getUploadedImages('part2_photos');
+            const part4Pngs   = getUploadedImages('part4_pngs');
+            
+            const reelsText = props['part3_reels']?.rich_text[0]?.plain_text || '';
+            const part3Reels = reelsText ? reelsText.split(',') : [];
+
+            // --- 开始填充 HTML ---
             document.getElementById('modal-title').innerText = name;
             document.getElementById('modal-date').innerText = date;
 
-            // 填充 Part 1: 合照 + 回忆
+            // Part 1: 合照 + 回忆 (支持多张合照上下滑动)
+            let p1HTML = '';
+            part1Photos.forEach(url => {
+                p1HTML += `<img src="${url}" alt="合照" style="width:100%; border-radius:12px; border:1px solid var(--glass-border); margin-bottom:15px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">`;
+            });
             document.getElementById('p1-content').innerHTML = `
-                <img src="${couplePhoto}" class="part1-photo" alt="合照">
+                <div style="width: 45%; max-height: 450px; overflow-y: auto; padding-right: 15px; flex-shrink: 0;">
+                    ${p1HTML || '<div style="color:rgba(255,255,255,0.4)">暂无合照</div>'}
+                </div>
                 <div class="part1-text">${memory}</div>
             `;
 
-            // 填充 Part 2: 风景照片 (支持任意数量滚动)
+            // Part 2: 风景照片 (网格排版，支持无限张)
             let p2HTML = '';
-            sceneryPhotos.forEach(url => {
-                p2HTML += `<div class="media-card"><img src="${url.trim()}" alt="风景"></div>`;
+            part2Photos.forEach(url => {
+                p2HTML += `<div class="media-card"><img src="${url}" alt="风景"></div>`;
             });
             document.getElementById('p2-content').innerHTML = p2HTML || '<div style="color:rgba(255,255,255,0.4)">暂无风光照片</div>';
 
-            // 填充 Part 3: Instagram Reels
+            // Part 3: Instagram Vlog
             let p3HTML = '';
-            reels.forEach(url => {
-                p3HTML += `<div class="media-card"><iframe src="${url.trim()}/embed" width="100%" height="220" frameborder="0" scrolling="no" allowtransparency="true"></iframe></div>`;
+            part3Reels.forEach(url => {
+                let embedUrl = url.trim();
+                // 自动补全 embed 格式
+                if(embedUrl.includes('instagram.com') && !embedUrl.includes('embed')) {
+                    embedUrl = embedUrl.replace(/\/?$/, '/embed');
+                }
+                p3HTML += `<div class="media-card"><iframe src="${embedUrl}" width="100%" height="220" frameborder="0" scrolling="no" allowtransparency="true"></iframe></div>`;
             });
-            document.getElementById('p3-content').innerHTML = p3HTML || '<div style="color:rgba(255,255,255,0.4)">暂无 Reels 视频记录</div>';
+            document.getElementById('p3-content').innerHTML = p3HTML || '<div style="color:rgba(255,255,255,0.4)">暂无 Vlog 视频</div>';
 
-            // 填充 Part 4: PNG 小物件/徽章
+            // Part 4: PNG 小物件
             let p4HTML = '';
-            pngStickers.forEach(url => {
-                p4HTML += `<div class="png-item"><img src="${url.trim()}" alt="纪念物件"></div>`;
+            part4Pngs.forEach(url => {
+                p4HTML += `<div class="png-item"><img src="${url}" alt="纪念物件"></div>`;
             });
             document.getElementById('p4-content').innerHTML = p4HTML || '<div style="color:rgba(255,255,255,0.4)">暂无专属纪念物件</div>';
 
@@ -328,7 +337,6 @@
             switchTab('part1');
             modal.classList.add('active');
         }
-
         // 左侧菜单切换逻辑
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
