@@ -409,11 +409,20 @@
             });
             document.getElementById('p2-content').innerHTML = p2HTML || '<div style="color:rgba(255,255,255,0.4)">暂无风光照片</div>';
 
-            // Part 3: Instagram Vlog (增加遮罩层捕获点击)
+          // Part 3: Instagram Vlog (增加自动清洗链接尾巴的功能)
             let p3HTML = '';
             part3Reels.forEach(url => {
                 let embedUrl = url.trim();
-                if(embedUrl.includes('instagram.com') && !embedUrl.includes('embed')) embedUrl = embedUrl.replace(/\/?$/, '/embed');
+                
+                // 针对 Instagram 链接的专属清洗逻辑
+                if(embedUrl.includes('instagram.com')) {
+                    // 1. 砍掉问号后面的所有追踪参数
+                    embedUrl = embedUrl.split('?')[0];
+                    // 2. 确保网址以 /embed/ 结尾
+                    if (!embedUrl.endsWith('embed') && !embedUrl.endsWith('embed/')) {
+                        embedUrl = embedUrl.replace(/\/?$/, '/embed/');
+                    }
+                }
                 
                 p3HTML += `
                 <div class="media-card" style="position: relative;">
@@ -422,7 +431,6 @@
                 </div>`;
             });
             document.getElementById('p3-content').innerHTML = p3HTML || '<div style="color:rgba(255,255,255,0.4)">暂无 Vlog 视频</div>';
-
             // Part 4 保持不变
             let p4HTML = '';
             part4Pngs.forEach(url => {
