@@ -53,6 +53,12 @@
         .modal-location-title { font-size: 1.4rem; font-weight: 300; color: var(--gold-main); margin-bottom: 5px; }
         .modal-location-date { font-size: 0.75rem; color: rgba(247, 225, 215, 0.5); margin-bottom: 30px; }
         
+        /* ⭐️ 新增：多日期切换按钮样式 */
+        #modal-date-container { display: none; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; }
+        .date-switch-btn { background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.3); color: rgba(247, 225, 215, 0.8); padding: 6px 10px; border-radius: 8px; font-size: 0.7rem; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 4px; }
+        .date-switch-btn:hover { background: rgba(212, 175, 55, 0.25); color: var(--gold-main); }
+        .date-switch-btn.active { background: var(--gold-main); color: #050814; font-weight: bold; border-color: var(--gold-main); }
+
         .tab-btn { padding: 14px 18px; margin-bottom: 8px; border-radius: 12px; font-size: 0.85rem; cursor: pointer; color: rgba(247, 225, 215, 0.7); transition: all 0.3s; border: 1px solid transparent; text-align: left; background: transparent; }
         .tab-btn:hover { background: rgba(212, 175, 55, 0.08); color: var(--gold-main); }
         .tab-btn.active { background: rgba(212, 175, 55, 0.15); color: var(--gold-main); border-color: rgba(212, 175, 55, 0.3); font-weight: 600; }
@@ -78,11 +84,7 @@
         .png-item:hover { transform: scale(1.1); background: rgba(212, 175, 55, 0.1); }
         .png-item img { max-width: 80%; max-height: 80%; object-fit: contain; }
 		
-		
-		
-		/* ================= 优化新增样式 ================= */
-        
-        /* 全局照片/视频放大查看器 (Lightbox) */
+		/* 全局照片/视频放大查看器 (Lightbox) */
         #media-lightbox {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.9); z-index: 9999;
@@ -96,58 +98,23 @@
         #lightbox-iframe { width: 90%; max-width: 420px; height: 85vh; border-radius: 16px; background: #000; display: none; }
 
         /* Part 1 轮播与居中文案特效 */
-        .p1-carousel-container {
-            position: relative; width: 100%; max-width: 550px; margin: 0 auto;
-            border-radius: 16px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.5);
-            border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center;
-            background: #000;
-        }
+        .p1-carousel-container { position: relative; width: 100%; max-width: 550px; margin: 0 auto; border-radius: 16px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.5); border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; background: #000; }
         .p1-carousel-container img { width: 100%; display: block; opacity: 0.8; transition: opacity 0.4s; }
         
-        /* 永远居中在照片上的回忆文案 */
-        .p1-memory-overlay {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 85%; text-align: center; font-size: 1.15rem; font-weight: 400; line-height: 1.7;
-            color: #ffffff; text-shadow: 0 2px 15px rgba(0,0,0,0.9), 0 0 40px rgba(0,0,0,0.6);
-            pointer-events: none; /* 核心：让鼠标穿透文字，不影响点击图片 */
-            z-index: 2;
-        }
+        .p1-memory-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; text-align: center; font-size: 1.15rem; font-weight: 400; line-height: 1.7; color: #ffffff; text-shadow: 0 2px 15px rgba(0,0,0,0.9), 0 0 40px rgba(0,0,0,0.6); pointer-events: none; z-index: 2; }
 
-        /* 轮播控制按钮 */
-        .p1-nav-btn {
-            position: absolute; top: 50%; transform: translateY(-50%);
-            background: rgba(0,0,0,0.4); color: white; border: none; font-size: 1.5rem;
-            padding: 10px 15px; cursor: pointer; transition: background 0.3s; z-index: 3;
-        }
+        .p1-nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.4); color: white; border: none; font-size: 1.5rem; padding: 10px 15px; cursor: pointer; transition: background 0.3s; z-index: 3; }
         .p1-nav-btn:hover { background: var(--gold-main); }
         .p1-nav-btn.left { left: 0; border-radius: 0 8px 8px 0; }
         .p1-nav-btn.right { right: 0; border-radius: 8px 0 0 8px; }
         
-        /* 放大按钮 */
-        .p1-zoom-btn {
-            position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 12px;
-            border-radius: 8px; cursor: pointer; font-size: 1rem; z-index: 3; transition: all 0.3s;
-        }
+        .p1-zoom-btn { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 1rem; z-index: 3; transition: all 0.3s; }
         .p1-zoom-btn:hover { background: var(--gold-main); transform: scale(1.1); }
 
-        /* 视频遮罩层（为了捕获点击实现放大） */
-        .iframe-overlay {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.15); cursor: zoom-in; transition: all 0.3s; z-index: 10;
-        }
+        .iframe-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.15); cursor: zoom-in; transition: all 0.3s; z-index: 10; }
         .iframe-overlay:hover { background: rgba(0,0,0,0.4); }
-        .iframe-overlay::after {
-            content: '🔍 点击全屏播放'; position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%); color: white; opacity: 0; font-weight: bold;
-            transition: opacity 0.3s; text-shadow: 0 2px 10px rgba(0,0,0,0.8);
-        }
+        .iframe-overlay::after { content: '🔍 点击全屏播放'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; opacity: 0; font-weight: bold; transition: opacity 0.3s; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
         .iframe-overlay:hover::after { opacity: 1; }
-		
-		
-		
-		
-		
     </style>
 </head>
 <body>
@@ -172,7 +139,12 @@
         <!-- 左侧切换栏 -->
         <div class="modal-sidebar">
             <div class="modal-location-title" id="modal-title">地点名称</div>
+            
+            <!-- 原单一日期 -->
             <div class="modal-location-date" id="modal-date">日期</div>
+            
+            <!-- ⭐️ 新增：多日期切换器 (如果只去过一次则隐藏) -->
+            <div id="modal-date-container"></div>
             
             <button class="tab-btn active" onclick="switchTab('part1')">✨ 1. 合照与回忆</button>
             <button class="tab-btn" onclick="switchTab('part2')">📸 2. 地方风光</button>
@@ -182,37 +154,14 @@
 
         <!-- 右侧内容展示区 -->
         <div class="modal-body">
-            <!-- Part 1: 合照 + 描述 -->
-            <div id="part1" class="tab-content active">
-                <div class="part1-container" id="p1-content">
-                    <!-- 动态注入 -->
-                </div>
-            </div>
-
-            <!-- Part 2: 地方风景照片 -->
-            <div id="part2" class="tab-content">
-                <div class="media-grid" id="p2-content">
-                    <!-- 动态注入多张风景照 -->
-                </div>
-            </div>
-
-            <!-- Part 3: Instagram Reels Vlog -->
-            <div id="part3" class="tab-content">
-                <div class="media-grid" id="p3-content">
-                    <!-- 动态注入 Reels 视频 -->
-                </div>
-            </div>
-
-            <!-- Part 4: PNG 小物件/冰箱贴/徽章 -->
-            <div id="part4" class="tab-content">
-                <div class="png-showcase" id="p4-content">
-                    <!-- 动态注入 PNG 图标 -->
-                </div>
-            </div>
+            <div id="part1" class="tab-content active"><div class="part1-container" id="p1-content"></div></div>
+            <div id="part2" class="tab-content"><div class="media-grid" id="p2-content"></div></div>
+            <div id="part3" class="tab-content"><div class="media-grid" id="p3-content"></div></div>
+            <div id="part4" class="tab-content"><div class="png-showcase" id="p4-content"></div></div>
         </div>
     </div>
 	
-<!-- 全局放大查看器 (Lightbox) -->
+    <!-- 全局放大查看器 (Lightbox) -->
     <div id="media-lightbox">
         <div class="lightbox-close" onclick="closeLightbox()">&times;</div>
         <img id="lightbox-img" src="" alt="放大照片">
@@ -247,7 +196,6 @@
         controls.minDistance = 110; 
         controls.maxDistance = 450;
 
-        // 星空背景
         const starGeo = new THREE.BufferGeometry();
         const starPos = new Float32Array(800 * 3);
         for(let i = 0; i < 2400; i++) starPos[i] = (Math.random() - 0.5) * 800;
@@ -274,8 +222,8 @@
         dirLight.position.set(200, 100, 150);
         scene.add(dirLight);
 
-        // 全局存储 Notion 拉取到的完整数据
-        let allTravelData = [];
+        // ⭐️ 全局存储分组后的地点数据
+        let groupedTravelData = {};
 
         // 从 Vercel 后端安全拉取 Notion 数据
         async function fetchNotionData() {
@@ -285,31 +233,56 @@
                 
                 if (!data.results) return;
 
-                allTravelData = data.results;
+                groupedTravelData = {};
                 const travelListContainer = document.querySelector('.travel-list');
                 travelListContainer.innerHTML = '';
 
-                allTravelData.forEach((page, index) => {
+                // 1. 数据合并逻辑：将同地点的记录归类到一个对象里
+                data.results.forEach((page) => {
                     const props = page.properties;
                     if (!props['name'] || props['name'].title.length === 0) return;
 
                     const name = props['name'].title[0].plain_text;
-                    const date = props['date']?.date?.start || '未知日期';
+                    const dateStr = props['date']?.date?.start || '未知日期';
                     const lat = parseFloat(props['lat']?.number);
                     const lng = parseFloat(props['lng']?.number);
 
                     if (!isNaN(lat) && !isNaN(lng)) {
-                        createMarkerOnGlobe(lat, lng);
+                        if (!groupedTravelData[name]) {
+                            groupedTravelData[name] = { lat, lng, trips: [] };
+                        }
                         
-                        const itemHTML = `
-                            <div class="travel-item" onclick="flyToLocation(${lat}, ${lng}, ${index})">
-                                <span class="travel-date">${date}</span>
-                                <span>${name}</span>
-                            </div>
-                        `;
-                        travelListContainer.innerHTML += itemHTML;
+                        // 为了之后能正确排序，解析日期格式
+                        let parsedDate = new Date(dateStr);
+                        if (isNaN(parsedDate)) parsedDate = new Date('2000-01-01');
+                        page._parsedDate = parsedDate;
+                        
+                        groupedTravelData[name].trips.push(page);
                     }
                 });
+
+                // 2. 排序与渲染左下角菜单 (只渲染独一无二的地点)
+                for (const locationName in groupedTravelData) {
+                    const locData = groupedTravelData[locationName];
+                    
+                    // 按日期升序排列：最早的时间排在 index 0
+                    locData.trips.sort((a, b) => a._parsedDate - b._parsedDate);
+
+                    createMarkerOnGlobe(locData.lat, locData.lng);
+                    
+                    // 如果去过多于1次，日期栏会显示去过的总次数，否则直接显示时间
+                    const dateDisplay = locData.trips.length > 1 
+                        ? `👣 重游了 ${locData.trips.length} 次` 
+                        : (locData.trips[0].properties['date']?.date?.start || '未知日期');
+
+                    const itemHTML = `
+                        <div class="travel-item" onclick="flyToLocation(${locData.lat}, ${locData.lng}, '${locationName}')">
+                            <span class="travel-date">${dateDisplay}</span>
+                            <span>${locationName}</span>
+                        </div>
+                    `;
+                    travelListContainer.innerHTML += itemHTML;
+                }
             } catch (error) {
                 console.error("❌ 后端连接失败：", error);
             }
@@ -335,14 +308,11 @@
 
         let isAutoRotating = true;
 
-// ================= 1. 修复地球自转导致的点击偏移 =================
-        function flyToLocation(lat, lon, title, subtitle) {
+        // 修复地球自转导致的点击偏移 (参数现在传入了地点的名称)
+        function flyToLocation(lat, lon, locationName) {
             isAutoRotating = false; 
 
-            // 获取该经纬度在地球没自转时的原始局部坐标
             const localPos = latLonToVector3(lat, lon, globeRadius + 60); 
-            
-            // 核心修复：将地球当前的自转角度叠加给镜头坐标，让镜头“追”上真实的地点！
             const cameraTargetPos = localPos.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), globeGroup.rotation.y);
 
             gsap.to(camera.position, {
@@ -352,23 +322,68 @@
                 duration: 2.2,
                 ease: "power2.inOut",
                 onUpdate: () => { controls.update(); },
-                onComplete: () => { openModal(title, subtitle); }
+                onComplete: () => { openModal(locationName); }
             });
         }
 
-
-        // ================= 全局相册状态控制 =================
+        // 全局相册状态控制
         let currentP1Index = 0;
         let p1PhotosArray = [];
+        let currentOpenLocation = ''; 
 
-        // ================= 2 & 3. 修复多个 Reel 以及 Part 1 排版 =================
+        // ⭐️ 打开弹窗主函数
         const modal = document.getElementById('memory-modal');
-        function openModal(index) {
-            const row = allTravelData[index];
+        function openModal(locationName) {
+            currentOpenLocation = locationName;
+            const locData = groupedTravelData[locationName];
+            if (!locData || locData.trips.length === 0) return;
+
+            document.getElementById('modal-title').innerText = locationName;
+
+            // 处理日期切换器逻辑
+            const dateContainer = document.getElementById('modal-date-container');
+            const singleDateText = document.getElementById('modal-date');
+
+            if (locData.trips.length > 1) {
+                // 多次旅行：渲染切换按钮
+                let btnsHTML = '';
+                locData.trips.forEach((trip, idx) => {
+                    const d = trip.properties['date']?.date?.start || '未知日期';
+                    // 默认高亮第一个（最早的日期）
+                    const activeClass = idx === 0 ? 'active' : '';
+                    btnsHTML += `<button class="date-switch-btn ${activeClass}" onclick="renderTripContent(${idx})">🗓️ ${d}</button>`;
+                });
+                dateContainer.innerHTML = btnsHTML;
+                dateContainer.style.display = 'flex';
+                singleDateText.style.display = 'none'; // 隐藏单一文字
+            } else {
+                // 只有一次旅行：保持原样极简显示
+                dateContainer.style.display = 'none';
+                singleDateText.innerText = locData.trips[0].properties['date']?.date?.start || '未知日期';
+                singleDateText.style.display = 'block';
+            }
+
+            // 首次打开，渲染最早的那次记忆 (index 0)
+            renderTripContent(0);
+            
+            switchTab('part1');
+            modal.classList.add('active');
+        }
+
+        // ⭐️ 核心渲染/切换函数
+        function renderTripContent(tripIndex) {
+            const locData = groupedTravelData[currentOpenLocation];
+            const row = locData.trips[tripIndex];
             const props = row.properties;
             
-            const name = props['name']?.title[0]?.plain_text || '难忘地点';
-            const date = props['date']?.date?.start || '';
+            // 如果有多日期，更新按钮高亮状态
+            if (locData.trips.length > 1) {
+                const btns = document.querySelectorAll('.date-switch-btn');
+                btns.forEach((btn, idx) => {
+                    btn.classList.toggle('active', idx === tripIndex);
+                });
+            }
+
             const memory = props['memory']?.rich_text[0]?.plain_text || '留下的美好回忆...';
             
             function getUploadedImages(propName) {
@@ -377,34 +392,23 @@
                 return prop.files.map(f => f.file?.url || f.external?.url).filter(Boolean);
             }
 
-            // 获取相片数据
             p1PhotosArray = getUploadedImages('part1_photos');
             const part2Photos = getUploadedImages('part2_photos');
             const part4Pngs   = getUploadedImages('part4_pngs');
-            
-            // 修复2：支持用逗号、空格或回车换行来隔开多个 Instagram 链接
             const reelsText = props['part3_reels']?.rich_text[0]?.plain_text || '';
             const part3Reels = reelsText ? reelsText.split(/[,\n\s]+/).filter(url => url.includes('http')) : [];
 
-            // 防呆：如果没有上传 Part 1 照片，给一张默认图
             if (p1PhotosArray.length === 0) p1PhotosArray = ['https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600'];
             currentP1Index = 0; 
 
-            // 填充顶部标题
-            document.getElementById('modal-title').innerText = name;
-            document.getElementById('modal-date').innerText = date;
-
-            // 修复3：Part 1 排版 - 文字居中在上方，相册轮播在下方
-            // 使用 var(--text-main) 保持你极简白昼版的文字颜色一致性
+            // Part 1 排版
             let p1HTML = `
                 <div class="part1-text" style="text-align: center; font-size: 1.15rem; line-height: 1.7; margin-bottom: 25px; color: var(--text-main); font-weight: 400;">
                     ${memory}
                 </div>
                 <div class="p1-carousel-container" style="position: relative; width: 100%; max-width: 550px; margin: 0 auto; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15); background: #000;">
                     <img id="p1-main-img" src="${p1PhotosArray[0]}" alt="合照" style="width: 100%; display: block; transition: opacity 0.4s; opacity: 1;">
-                    
                     <button class="p1-zoom-btn" onclick="openLightbox('image', p1PhotosArray[currentP1Index])" style="position:absolute; top:15px; right:15px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2); color:white; padding:8px 12px; border-radius:8px; cursor:pointer; z-index:3;">🔍 放大</button>
-                    
                     ${p1PhotosArray.length > 1 ? `
                         <button class="p1-nav-btn left" onclick="changeP1Photo(-1)" style="position:absolute; top:50%; left:0; transform:translateY(-50%); background:rgba(0,0,0,0.4); color:white; border:none; font-size:1.5rem; padding:10px 15px; cursor:pointer; z-index:3;">&#10094;</button>
                         <button class="p1-nav-btn right" onclick="changeP1Photo(1)" style="position:absolute; top:50%; right:0; transform:translateY(-50%); background:rgba(0,0,0,0.4); color:white; border:none; font-size:1.5rem; padding:10px 15px; cursor:pointer; z-index:3;">&#10095;</button>
@@ -412,22 +416,20 @@
                 </div>
             `;
             document.getElementById('p1-content').innerHTML = p1HTML;
-            // 确保取消掉以前可能存在的 flex 居中干扰
             document.getElementById('p1-content').style.display = 'block';
 
-            // Part 2: 风景照片 (支持点击放大)
+            // Part 2: 风景照片
             let p2HTML = '';
             part2Photos.forEach(url => {
                 p2HTML += `<div class="media-card" style="cursor: zoom-in;" onclick="openLightbox('image', '${url}')"><img src="${url}" alt="风景"></div>`;
             });
             document.getElementById('p2-content').innerHTML = p2HTML || '<div style="color:rgba(127,140,141,0.6)">暂无风光照片</div>';
 
-            // Part 3: Instagram Vlog (支持无限个，并增加点击放大遮罩层)
+            // Part 3: Instagram Vlog 
             let p3HTML = '';
             part3Reels.forEach(url => {
                 let embedUrl = url.trim();
                 if(embedUrl.includes('instagram.com') && !embedUrl.includes('embed')) embedUrl = embedUrl.replace(/\/?$/, '/embed');
-                
                 p3HTML += `
                 <div class="media-card" style="position: relative;">
                     <iframe src="${embedUrl}" width="100%" height="220" frameborder="0" scrolling="no" allowtransparency="true"></iframe>
@@ -442,38 +444,23 @@
                 p4HTML += `<div class="png-item"><img src="${url}" alt="纪念物件"></div>`;
             });
             document.getElementById('p4-content').innerHTML = p4HTML || '<div style="color:rgba(127,140,141,0.6)">暂无专属纪念物件</div>';
-
-            switchTab('part1');
-            modal.classList.add('active');
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-        // --- 新增：Part 1 轮播切换逻辑 ---
+        // --- Part 1 轮播切换逻辑 ---
         function changeP1Photo(direction) {
             currentP1Index += direction;
             if (currentP1Index < 0) currentP1Index = p1PhotosArray.length - 1;
             if (currentP1Index >= p1PhotosArray.length) currentP1Index = 0;
             
             const imgEl = document.getElementById('p1-main-img');
-            imgEl.style.opacity = 0; // 淡出过渡
+            imgEl.style.opacity = 0; 
             setTimeout(() => {
                 imgEl.src = p1PhotosArray[currentP1Index];
-                imgEl.style.opacity = 1; // 淡入新图
+                imgEl.style.opacity = 1; 
             }, 300);
         }
 
-        // --- 新增：全局沉浸式放大 (Lightbox) 逻辑 ---
+        // --- 全局沉浸式放大 (Lightbox) 逻辑 ---
         const lightbox = document.getElementById('media-lightbox');
         const lbImg = document.getElementById('lightbox-img');
         const lbIframe = document.getElementById('lightbox-iframe');
@@ -499,31 +486,15 @@
             }, 300);
         }
 
-        // 点击背景也能关闭放大图层
         lightbox.addEventListener('click', function(e) {
             if (e.target === lightbox) closeLightbox();
         });
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
 		
         // 左侧菜单切换逻辑
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            
             document.getElementById(tabId).classList.add('active');
-            
-            // 找到对应的按钮并高亮
             event && event.currentTarget && event.currentTarget.classList.add('active');
         }
 
@@ -546,8 +517,5 @@
             renderer.setSize(window.innerWidth, window.innerHeight); 
         });
     </script>
-	
-	
-	
 </body>
 </html>
