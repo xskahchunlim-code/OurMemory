@@ -334,27 +334,34 @@
         fetchNotionData();
 
         let isAutoRotating = true;
-        function flyToLocation(lat, lon, dataIndex) {
+
+// ================= 1. 修复地球自转导致的点击偏移 =================
+        function flyToLocation(lat, lon, title, subtitle) {
             isAutoRotating = false; 
-            const cameraTargetPos = latLonToVector3(lat, lon, globeRadius + 60); 
-            gsap.to(camera.position, { 
-                x: cameraTargetPos.x, y: cameraTargetPos.y, z: cameraTargetPos.z, 
-                duration: 2.2, ease: "power2.inOut", 
-                onUpdate: () => { controls.update(); }, 
-                onComplete: () => { openModal(dataIndex); } 
+
+            // 获取该经纬度在地球没自转时的原始局部坐标
+            const localPos = latLonToVector3(lat, lon, globeRadius + 60); 
+            
+            // 核心修复：将地球当前的自转角度叠加给镜头坐标，让镜头“追”上真实的地点！
+            const cameraTargetPos = localPos.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), globeGroup.rotation.y);
+
+            gsap.to(camera.position, {
+                x: cameraTargetPos.x,
+                y: cameraTargetPos.y,
+                z: cameraTargetPos.z,
+                duration: 2.2,
+                ease: "power2.inOut",
+                onUpdate: () => { controls.update(); },
+                onComplete: () => { openModal(title, subtitle); }
             });
         }
-		
-		
-		
-		
-		
-		
-		// ================= 全局状态控制 =================
+
+
+        // ================= 全局相册状态控制 =================
         let currentP1Index = 0;
         let p1PhotosArray = [];
-        
-        // 渲染弹窗内容 (增强了合照轮播与放大功能)
+
+        // ================= 2 & 3. 修复多个 Reel 以及 Part 1 排版 =================
         const modal = document.getElementById('memory-modal');
         function openModal(index) {
             const row = allTravelData[index];
@@ -370,59 +377,56 @@
                 return prop.files.map(f => f.file?.url || f.external?.url).filter(Boolean);
             }
 
-            // 获取数据
+            // 获取相片数据
             p1PhotosArray = getUploadedImages('part1_photos');
             const part2Photos = getUploadedImages('part2_photos');
             const part4Pngs   = getUploadedImages('part4_pngs');
+            
+            // 修复2：支持用逗号、空格或回车换行来隔开多个 Instagram 链接
             const reelsText = props['part3_reels']?.rich_text[0]?.plain_text || '';
-            const part3Reels = reelsText ? reelsText.split(',') : [];
+            const part3Reels = reelsText ? reelsText.split(/[,\n\s]+/).filter(url => url.includes('http')) : [];
 
             // 防呆：如果没有上传 Part 1 照片，给一张默认图
             if (p1PhotosArray.length === 0) p1PhotosArray = ['https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600'];
-            currentP1Index = 0; // 每次打开归零
+            currentP1Index = 0; 
 
-            // --- 填充 HTML ---
+            // 填充顶部标题
             document.getElementById('modal-title').innerText = name;
             document.getElementById('modal-date').innerText = date;
 
-            // Part 1: 图片居中、文案盖在上方、轮播控制
+            // 修复3：Part 1 排版 - 文字居中在上方，相册轮播在下方
+            // 使用 var(--text-main) 保持你极简白昼版的文字颜色一致性
             let p1HTML = `
-                <div class="p1-carousel-container">
-                    <img id="p1-main-img" src="${p1PhotosArray[0]}" alt="合照">
-                    <div class="p1-memory-overlay">${memory}</div>
-                    <button class="p1-zoom-btn" onclick="openLightbox('image', p1PhotosArray[currentP1Index])">🔍 放大查看</button>
+                <div class="part1-text" style="text-align: center; font-size: 1.15rem; line-height: 1.7; margin-bottom: 25px; color: var(--text-main); font-weight: 400;">
+                    ${memory}
+                </div>
+                <div class="p1-carousel-container" style="position: relative; width: 100%; max-width: 550px; margin: 0 auto; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15); background: #000;">
+                    <img id="p1-main-img" src="${p1PhotosArray[0]}" alt="合照" style="width: 100%; display: block; transition: opacity 0.4s; opacity: 1;">
+                    
+                    <button class="p1-zoom-btn" onclick="openLightbox('image', p1PhotosArray[currentP1Index])" style="position:absolute; top:15px; right:15px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2); color:white; padding:8px 12px; border-radius:8px; cursor:pointer; z-index:3;">🔍 放大</button>
                     
                     ${p1PhotosArray.length > 1 ? `
-                        <button class="p1-nav-btn left" onclick="changeP1Photo(-1)">&#10094;</button>
-                        <button class="p1-nav-btn right" onclick="changeP1Photo(1)">&#10095;</button>
+                        <button class="p1-nav-btn left" onclick="changeP1Photo(-1)" style="position:absolute; top:50%; left:0; transform:translateY(-50%); background:rgba(0,0,0,0.4); color:white; border:none; font-size:1.5rem; padding:10px 15px; cursor:pointer; z-index:3;">&#10094;</button>
+                        <button class="p1-nav-btn right" onclick="changeP1Photo(1)" style="position:absolute; top:50%; right:0; transform:translateY(-50%); background:rgba(0,0,0,0.4); color:white; border:none; font-size:1.5rem; padding:10px 15px; cursor:pointer; z-index:3;">&#10095;</button>
                     ` : ''}
                 </div>
             `;
-            // 因为 Part 1 改为纯居中卡片了，可以覆盖原有的分栏样式
             document.getElementById('p1-content').innerHTML = p1HTML;
-            document.getElementById('p1-content').style.justifyContent = 'center';
+            // 确保取消掉以前可能存在的 flex 居中干扰
+            document.getElementById('p1-content').style.display = 'block';
 
-            // Part 2: 风景照片 (点击触发放大)
+            // Part 2: 风景照片 (支持点击放大)
             let p2HTML = '';
             part2Photos.forEach(url => {
                 p2HTML += `<div class="media-card" style="cursor: zoom-in;" onclick="openLightbox('image', '${url}')"><img src="${url}" alt="风景"></div>`;
             });
-            document.getElementById('p2-content').innerHTML = p2HTML || '<div style="color:rgba(255,255,255,0.4)">暂无风光照片</div>';
+            document.getElementById('p2-content').innerHTML = p2HTML || '<div style="color:rgba(127,140,141,0.6)">暂无风光照片</div>';
 
-          // Part 3: Instagram Vlog (增加自动清洗链接尾巴的功能)
+            // Part 3: Instagram Vlog (支持无限个，并增加点击放大遮罩层)
             let p3HTML = '';
             part3Reels.forEach(url => {
                 let embedUrl = url.trim();
-                
-                // 针对 Instagram 链接的专属清洗逻辑
-                if(embedUrl.includes('instagram.com')) {
-                    // 1. 砍掉问号后面的所有追踪参数
-                    embedUrl = embedUrl.split('?')[0];
-                    // 2. 确保网址以 /embed/ 结尾
-                    if (!embedUrl.endsWith('embed') && !embedUrl.endsWith('embed/')) {
-                        embedUrl = embedUrl.replace(/\/?$/, '/embed/');
-                    }
-                }
+                if(embedUrl.includes('instagram.com') && !embedUrl.includes('embed')) embedUrl = embedUrl.replace(/\/?$/, '/embed');
                 
                 p3HTML += `
                 <div class="media-card" style="position: relative;">
@@ -430,17 +434,30 @@
                     <div class="iframe-overlay" onclick="openLightbox('video', '${embedUrl}')"></div>
                 </div>`;
             });
-            document.getElementById('p3-content').innerHTML = p3HTML || '<div style="color:rgba(255,255,255,0.4)">暂无 Vlog 视频</div>';
-            // Part 4 保持不变
+            document.getElementById('p3-content').innerHTML = p3HTML || '<div style="color:rgba(127,140,141,0.6)">暂无 Vlog 视频</div>';
+
+            // Part 4: PNG 小物件
             let p4HTML = '';
             part4Pngs.forEach(url => {
                 p4HTML += `<div class="png-item"><img src="${url}" alt="纪念物件"></div>`;
             });
-            document.getElementById('p4-content').innerHTML = p4HTML || '<div style="color:rgba(255,255,255,0.4)">暂无专属纪念物件</div>';
+            document.getElementById('p4-content').innerHTML = p4HTML || '<div style="color:rgba(127,140,141,0.6)">暂无专属纪念物件</div>';
 
             switchTab('part1');
             modal.classList.add('active');
         }
+
+
+
+
+
+
+
+
+
+
+
+
 
         // --- 新增：Part 1 轮播切换逻辑 ---
         function changeP1Photo(direction) {
