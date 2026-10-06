@@ -29,20 +29,20 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 99999; background: #020308;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            transition: opacity 1s ease, transform 1s ease;
+            transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
         #loading-overlay.hidden {
-            opacity: 0; pointer-events: none; transform: scale(1.05);
+            opacity: 0; pointer-events: none; transform: scale(1.08);
         }
 
-        /* 视频居中，不放大显示 */
+        /* 🎬 视频容器放大处理 (16:9 比例) */
         .loading-video-container {
-            width: 320px; height: 180px;
-            border-radius: 16px; overflow: hidden;
+            width: 480px; height: 270px;
+            max-width: 88vw; max-height: 48vh;
+            border-radius: 20px; overflow: hidden;
             border: 1px solid var(--glass-border);
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
-            margin-bottom: 25px;
-            background: #000;
+            box-shadow: 0 0 40px rgba(212, 175, 55, 0.3);
+            margin-bottom: 30px; background: #000;
         }
         #loading-video {
             width: 100%; height: 100%; object-fit: cover; display: block;
@@ -100,27 +100,41 @@
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* Part 2 网格卡片风格 */
         .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
-        .media-card { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 12px; overflow: hidden; padding: 10px; text-align: center; }
+        .media-card { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 12px; overflow: hidden; padding: 10px; text-align: center; transition: transform 0.3s, border-color 0.3s; }
+        .media-card:hover { transform: translateY(-4px); border-color: var(--gold-main); }
         .media-card img, .media-card iframe { width: 100%; border-radius: 8px; object-fit: cover; }
-        .media-card img { height: 160px; }
+        .media-card img { height: 160px; display: block; }
         
         .png-showcase { display: flex; flex-wrap: wrap; gap: 25px; justify-content: center; align-items: center; padding: 20px; }
         .png-item { width: 110px; height: 110px; background: rgba(255, 255, 255, 0.05); border: 1px dashed rgba(212, 175, 55, 0.4); border-radius: 50%; display: flex; justify-content: center; align-items: center; padding: 10px; transition: transform 0.3s; }
         .png-item:hover { transform: scale(1.1); background: rgba(212, 175, 55, 0.1); }
         .png-item img { max-width: 80%; max-height: 80%; object-fit: contain; }
 		
+        /* 🔍 全局照片/视频放大查看器 (Lightbox) - 带左右翻页按钮 */
         #media-lightbox {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.9); z-index: 9999;
+            background: rgba(0, 0, 0, 0.92); z-index: 9999;
             display: flex; justify-content: center; align-items: center;
             opacity: 0; visibility: hidden; transition: all 0.3s ease;
         }
         #media-lightbox.active { opacity: 1; visibility: visible; }
-        .lightbox-close { position: absolute; top: 30px; right: 40px; font-size: 2.5rem; color: #fff; cursor: pointer; opacity: 0.7; transition: opacity 0.3s; }
+        .lightbox-close { position: absolute; top: 30px; right: 40px; font-size: 2.5rem; color: #fff; cursor: pointer; opacity: 0.7; transition: opacity 0.3s; z-index: 10001; }
         .lightbox-close:hover { opacity: 1; color: var(--gold-main); }
-        #lightbox-img { max-width: 90%; max-height: 90%; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); display: none; }
+        #lightbox-img { max-width: 85%; max-height: 85vh; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); display: none; transition: opacity 0.3s; }
         #lightbox-iframe { width: 90%; max-width: 420px; height: 85vh; border-radius: 16px; background: #000; display: none; }
+
+        /* Lightbox 翻页按钮 */
+        .lb-nav-btn {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;
+            font-size: 2rem; padding: 15px 20px; border-radius: 50%; cursor: pointer;
+            transition: all 0.3s; z-index: 10000; user-select: none;
+        }
+        .lb-nav-btn:hover { background: var(--gold-main); color: #000; border-color: var(--gold-main); }
+        .lb-nav-btn.left { left: 40px; }
+        .lb-nav-btn.right { right: 40px; }
 
         .carousel-container { position: relative; width: 100%; max-width: 550px; margin: 0 auto; border-radius: 16px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.5); border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; background: #000; }
         .carousel-container img { width: 100%; display: block; object-fit: cover; max-height: 420px; }
@@ -144,14 +158,13 @@
     <!-- 🎬 Loading 遮罩层：居中视频 + 提示文字 + 实时%进度 -->
     <div id="loading-overlay">
         <div class="loading-video-container">
-            <!-- 📌 提示：如果本地有视频，请替换 src 为你的视频文件名，如 "loading.mp4" -->
             <video id="loading-video" autoplay loop muted playsinline src="loading.mp4"></video>
         </div>
         <div class="loading-text">LOADING MEMORY</div>
         <div class="loading-percentage" id="loading-percent">0%</div>
     </div>
 
-    <!-- 🎵 背景音乐（请替换为你的 MP3 文件路径或直链，如 "bgm.mp3"） -->
+    <!-- 🎵 背景音乐 -->
     <audio id="bgm" loop src="bgm.mp3"></audio>
 
     <div class="site-header">
@@ -182,16 +195,19 @@
 
         <div class="modal-body">
             <div id="part1" class="tab-content active"><div id="p1-content"></div></div>
-            <div id="part2" class="tab-content"><div id="p2-content"></div></div>
+            <div id="part2" class="tab-content"><div class="media-grid" id="p2-content"></div></div>
             <div id="part3" class="tab-content"><div class="media-grid" id="p3-content"></div></div>
             <div id="part4" class="tab-content"><div class="png-showcase" id="p4-content"></div></div>
         </div>
     </div>
 	
+    <!-- 全局放大查看器 (Lightbox) - 包含上一张/下一张控制 -->
     <div id="media-lightbox">
         <div class="lightbox-close" onclick="closeLightbox()">&times;</div>
+        <button id="lb-prev-btn" class="lb-nav-btn left" onclick="navigateLightbox(-1)">&#10094;</button>
         <img id="lightbox-img" src="" alt="放大照片">
         <iframe id="lightbox-iframe" src="" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen></iframe>
+        <button id="lb-next-btn" class="lb-nav-btn right" onclick="navigateLightbox(1)">&#10095;</button>
     </div>
 	
     <script>
@@ -208,7 +224,10 @@
         }
 
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.copy(latLonToVector3(4.0, 102.0, 320)); 
+        // 初始镜头位置设得较远（例如距离 550），用于做进场放大过度动画
+        const initialCameraPos = latLonToVector3(4.0, 102.0, 550);
+        const targetCameraPos = latLonToVector3(4.0, 102.0, 320);
+        camera.position.copy(initialCameraPos); 
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -250,7 +269,6 @@
 
         let groupedTravelData = {};
 
-        // 📊 带 % 进度的照片预加载器
         function preloadImagesWithProgress(urls) {
             return new Promise((resolve) => {
                 if (!urls || urls.length === 0) {
@@ -264,16 +282,14 @@
                 urls.forEach((url) => {
                     const img = new Image();
                     img.src = url;
-                    
                     const handleLoad = () => {
                         loadedCount++;
                         const percent = Math.floor((loadedCount / total) * 100);
                         updatePercentUI(percent);
                         if (loadedCount >= total) resolve();
                     };
-
                     img.onload = handleLoad;
-                    img.onerror = handleLoad; // 即使破损图片也不卡主流程
+                    img.onerror = handleLoad;
                 });
             });
         }
@@ -348,10 +364,7 @@
                     travelListContainer.innerHTML += itemHTML;
                 }
 
-                // 执行带 % 计数的图片预加载
                 await preloadImagesWithProgress(allImageUrlsToPreload);
-
-                // 加载完毕，过过渡进入地球
                 finishLoading();
 
             } catch (error) {
@@ -360,18 +373,29 @@
             }
         }
 
+        // ✨ 地球慢慢放大/摄像机平滑推近过度动画
         function finishLoading() {
             updatePercentUI(100);
             setTimeout(() => {
                 const loadingOverlay = document.getElementById('loading-overlay');
                 loadingOverlay.classList.add('hidden');
 
+                // 使用 GSAP 让地球平滑推近变大（镜头从远处靠近）
+                gsap.to(camera.position, {
+                    x: targetCameraPos.x,
+                    y: targetCameraPos.y,
+                    z: targetCameraPos.z,
+                    duration: 2.8,
+                    ease: "power3.out",
+                    onUpdate: () => controls.update()
+                });
+
                 // 播放背景音乐
                 const bgm = document.getElementById('bgm');
                 bgm.play().catch(() => {
                     window.addEventListener('click', () => { bgm.play(); }, { once: true });
                 });
-            }, 400);
+            }, 300);
         }
 
         function createMarkerOnGlobe(lat, lon) {
@@ -411,12 +435,15 @@
             });
         }
 
+        // 相册状态与 5s 自动轮播控制
         let currentP1Index = 0;
         let p1PhotosArray = [];
-        
-        let currentP2Index = 0;
-        let p2PhotosArray = [];
-        
+        let p1AutoPlayTimer = null;
+
+        let activeGalleryPhotos = []; // 当前查看的相册列表（用于 Lightbox 切换）
+        let activeGalleryIndex = 0;
+        let lightboxAutoPlayTimer = null;
+
         let currentOpenLocation = ''; 
 
         const modal = document.getElementById('memory-modal');
@@ -452,6 +479,7 @@
         }
 
         function renderTripContent(tripIndex) {
+            stopP1AutoPlay();
             const locData = groupedTravelData[currentOpenLocation];
             const row = locData.trips[tripIndex];
             const props = row.properties;
@@ -472,22 +500,22 @@
             }
 
             p1PhotosArray = getUploadedImages('part1_photos');
-            p2PhotosArray = getUploadedImages('part2_photos');
+            activeGalleryPhotos = getUploadedImages('part2_photos');
             const part4Pngs   = getUploadedImages('part4_pngs');
             const reelsText = props['part3_reels']?.rich_text[0]?.plain_text || '';
             const part3Reels = reelsText ? reelsText.split(/[,\n\s]+/).filter(url => url.includes('http')) : [];
 
             if (p1PhotosArray.length === 0) p1PhotosArray = ['https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600'];
             currentP1Index = 0; 
-            currentP2Index = 0;
 
+            // Part 1: 卡片轮播
             let p1HTML = `
                 <div class="part1-text" style="text-align: center; font-size: 1.1rem; line-height: 1.7; margin-bottom: 20px; color: #F7E1D7; font-weight: 300;">
                     ${memory}
                 </div>
                 <div class="carousel-container">
                     <img id="p1-main-img" src="${p1PhotosArray[0]}" alt="合照">
-                    <button class="zoom-btn" onclick="openLightbox('image', p1PhotosArray[currentP1Index])">🔍 放大</button>
+                    <button class="zoom-btn" onclick="openLightbox('image', p1PhotosArray, currentP1Index)">🔍 放大</button>
                     ${p1PhotosArray.length > 1 ? `
                         <button class="nav-btn left" onclick="changeP1Photo(-1)">&#10094;</button>
                         <button class="nav-btn right" onclick="changeP1Photo(1)">&#10095;</button>
@@ -495,24 +523,20 @@
                 </div>
             `;
             document.getElementById('p1-content').innerHTML = p1HTML;
+            startP1AutoPlay(); // 启动 5s 自动轮播
 
+            // Part 2: 保留风景网格预览，点击可进入带有 Next/Prev 的放大影院
             let p2HTML = '';
-            if (p2PhotosArray.length > 0) {
-                p2HTML = `
-                    <div class="carousel-container">
-                        <img id="p2-main-img" src="${p2PhotosArray[0]}" alt="风光照片">
-                        <button class="zoom-btn" onclick="openLightbox('image', p2PhotosArray[currentP2Index])">🔍 放大</button>
-                        ${p2PhotosArray.length > 1 ? `
-                            <button class="nav-btn left" onclick="changeP2Photo(-1)">&#10094;</button>
-                            <button class="nav-btn right" onclick="changeP2Photo(1)">&#10095;</button>
-                        ` : ''}
-                    </div>
-                `;
+            if (activeGalleryPhotos.length > 0) {
+                activeGalleryPhotos.forEach((url, idx) => {
+                    p2HTML += `<div class="media-card" style="cursor: zoom-in;" onclick="openLightbox('image', activeGalleryPhotos, ${idx})"><img src="${url}" alt="风景"></div>`;
+                });
             } else {
-                p2HTML = '<div style="color:rgba(247, 225, 215, 0.4); text-align: center; padding: 40px;">暂无风光照片</div>';
+                p2HTML = '<div style="color:rgba(247, 225, 215, 0.4); text-align: center; grid-column: 1 / -1; padding: 40px;">暂无风光照片</div>';
             }
             document.getElementById('p2-content').innerHTML = p2HTML;
 
+            // Part 3: Instagram Vlog 
             let p3HTML = '';
             part3Reels.forEach(url => {
                 let embedUrl = url.trim();
@@ -523,8 +547,9 @@
                     <div class="iframe-overlay" onclick="openLightbox('video', '${embedUrl}')"></div>
                 </div>`;
             });
-            document.getElementById('p3-content').innerHTML = p3HTML || '<div style="color:rgba(247, 225, 215, 0.4); text-align: center;">暂无 Vlog 视频</div>';
+            document.getElementById('p3-content').innerHTML = p3HTML || '<div style="color:rgba(247, 225, 215, 0.4); text-align: center; grid-column: 1 / -1;">暂无 Vlog 视频</div>';
 
+            // Part 4: PNG 小物件
             let p4HTML = '';
             part4Pngs.forEach(url => {
                 p4HTML += `<div class="png-item"><img src="${url}" alt="纪念物件"></div>`;
@@ -532,42 +557,109 @@
             document.getElementById('p4-content').innerHTML = p4HTML || '<div style="color:rgba(247, 225, 215, 0.4); text-align: center;">暂无专属纪念物件</div>';
         }
 
+        // ⏱️ Part 1 自动 5 秒轮播
+        function startP1AutoPlay() {
+            stopP1AutoPlay();
+            if (p1PhotosArray.length > 1) {
+                p1AutoPlayTimer = setInterval(() => { changeP1Photo(1); }, 5000);
+            }
+        }
+        function stopP1AutoPlay() {
+            if (p1AutoPlayTimer) clearInterval(p1AutoPlayTimer);
+        }
+
         function changeP1Photo(direction) {
             currentP1Index = (currentP1Index + direction + p1PhotosArray.length) % p1PhotosArray.length;
             const imgEl = document.getElementById('p1-main-img');
-            imgEl.src = p1PhotosArray[currentP1Index];
+            if (imgEl) imgEl.src = p1PhotosArray[currentP1Index];
         }
 
-        function changeP2Photo(direction) {
-            currentP2Index = (currentP2Index + direction + p2PhotosArray.length) % p2PhotosArray.length;
-            const imgEl = document.getElementById('p2-main-img');
-            imgEl.src = p2PhotosArray[currentP2Index];
-        }
-
+        // 🔍 全局 Lightbox 放大模式 (支持 Part 2 点进去上一张/下一张，并且自动 5 秒切换)
         const lightbox = document.getElementById('media-lightbox');
         const lbImg = document.getElementById('lightbox-img');
         const lbIframe = document.getElementById('lightbox-iframe');
+        const lbPrevBtn = document.getElementById('lb-prev-btn');
+        const lbNextBtn = document.getElementById('lb-next-btn');
 
-        function openLightbox(type, url) {
+        let currentLightboxList = [];
+
+        function openLightbox(type, data, startIndex = 0) {
+            stopLightboxAutoPlay();
+            
             if (type === 'image') {
-                lbImg.src = url;
+                if (Array.isArray(data)) {
+                    currentLightboxList = data;
+                    activeGalleryIndex = startIndex;
+                    lbImg.src = currentLightboxList[activeGalleryIndex];
+
+                    // 多于1张时才显示 Next/Prev 按钮，并开启 5s 自动播放
+                    if (currentLightboxList.length > 1) {
+                        lbPrevBtn.style.display = 'block';
+                        lbNextBtn.style.display = 'block';
+                        startLightboxAutoPlay();
+                    } else {
+                        lbPrevBtn.style.display = 'none';
+                        lbNextBtn.style.display = 'none';
+                    }
+                } else {
+                    currentLightboxList = [data];
+                    lbImg.src = data;
+                    lbPrevBtn.style.display = 'none';
+                    lbNextBtn.style.display = 'none';
+                }
                 lbImg.style.display = 'block';
                 lbIframe.style.display = 'none';
+
             } else if (type === 'video') {
-                lbIframe.src = url;
+                lbIframe.src = data;
                 lbIframe.style.display = 'block';
                 lbImg.style.display = 'none';
+                lbPrevBtn.style.display = 'none';
+                lbNextBtn.style.display = 'none';
             }
+
             lightbox.classList.add('active');
         }
 
+        function navigateLightbox(direction) {
+            if (currentLightboxList.length <= 1) return;
+            activeGalleryIndex = (activeGalleryIndex + direction + currentLightboxList.length) % currentLightboxList.length;
+            lbImg.style.opacity = 0.3;
+            setTimeout(() => {
+                lbImg.src = currentLightboxList[activeGalleryIndex];
+                lbImg.style.opacity = 1;
+            }, 150);
+            // 手动翻页后重置 5s 倒计时
+            startLightboxAutoPlay();
+        }
+
+        // ⏱️ 全局 Lightbox 放大查看时的 5 秒自动翻页
+        function startLightboxAutoPlay() {
+            stopLightboxAutoPlay();
+            if (currentLightboxList.length > 1) {
+                lightboxAutoPlayTimer = setInterval(() => { navigateLightbox(1); }, 5000);
+            }
+        }
+        function stopLightboxAutoPlay() {
+            if (lightboxAutoPlayTimer) clearInterval(lightboxAutoPlayTimer);
+        }
+
         function closeLightbox() {
+            stopLightboxAutoPlay();
             lightbox.classList.remove('active');
             setTimeout(() => {
                 lbImg.src = '';
                 lbIframe.src = '';
             }, 300);
         }
+
+        // 键盘左右键翻页支持
+        window.addEventListener('keydown', (e) => {
+            if (!lightbox.classList.contains('active')) return;
+            if (e.key === 'ArrowLeft') navigateLightbox(-1);
+            if (e.key === 'ArrowRight') navigateLightbox(1);
+            if (e.key === 'Escape') closeLightbox();
+        });
 
         lightbox.addEventListener('click', function(e) {
             if (e.target === lightbox) closeLightbox();
@@ -581,6 +673,7 @@
         }
 
         function closeModal() { 
+            stopP1AutoPlay();
             modal.classList.remove('active'); 
             isAutoRotating = true; 
         }
