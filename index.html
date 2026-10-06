@@ -24,24 +24,40 @@
             color: #F7E1D7; overflow: hidden;
         }
 
-        /* 🎬 Loading 视频遮罩层 */
+        /* 🎬 居中的 Loading 视频与进度遮罩 */
         #loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 99999; background: #020308;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: opacity 1s ease, transform 1s ease;
         }
         #loading-overlay.hidden {
-            opacity: 0; pointer-events: none; transform: scale(1.08);
+            opacity: 0; pointer-events: none; transform: scale(1.05);
+        }
+
+        /* 视频居中，不放大显示 */
+        .loading-video-container {
+            width: 320px; height: 180px;
+            border-radius: 16px; overflow: hidden;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
+            margin-bottom: 25px;
+            background: #000;
         }
         #loading-video {
-            width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1; opacity: 0.6;
+            width: 100%; height: 100%; object-fit: cover; display: block;
         }
+
         .loading-text {
-            position: relative; z-index: 2; font-size: 1.2rem; letter-spacing: 4px; color: var(--gold-main);
-            text-shadow: 0 0 20px rgba(212, 175, 55, 0.8); animation: blink 1.5s ease-in-out infinite;
+            font-size: 1.1rem; letter-spacing: 4px; color: var(--gold-main);
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+            margin-bottom: 10px; font-weight: 300;
         }
-        @keyframes blink { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+        .loading-percentage {
+            font-size: 1.4rem; font-weight: 600; color: #ffffff;
+            font-family: 'Inter', sans-serif; letter-spacing: 2px;
+        }
 
         #globe-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
 
@@ -60,7 +76,6 @@
         .travel-item:hover { background: rgba(212, 175, 55, 0.12); color: var(--gold-main); border-left-color: var(--gold-main); padding-left: 24px; }
         .travel-date { font-size: 0.65rem; color: rgba(247, 225, 215, 0.45); margin-bottom: 2px; }
 
-        /* 四部分切换的弹窗样式 */
         #memory-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -45%) scale(0.95); width: 85%; max-width: 950px; height: 75vh; background: var(--glass-bg); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid var(--glass-border); border-radius: 24px; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7); z-index: 100; display: flex; opacity: 0; visibility: hidden; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: none; overflow: hidden; }
         #memory-modal.active { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
         
@@ -95,7 +110,6 @@
         .png-item:hover { transform: scale(1.1); background: rgba(212, 175, 55, 0.1); }
         .png-item img { max-width: 80%; max-height: 80%; object-fit: contain; }
 		
-        /* 全局照片/视频放大查看器 (Lightbox) */
         #media-lightbox {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.9); z-index: 9999;
@@ -108,7 +122,6 @@
         #lightbox-img { max-width: 90%; max-height: 90%; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); display: none; }
         #lightbox-iframe { width: 90%; max-width: 420px; height: 85vh; border-radius: 16px; background: #000; display: none; }
 
-        /* Part 1 & Part 2 轮播图统一样式 */
         .carousel-container { position: relative; width: 100%; max-width: 550px; margin: 0 auto; border-radius: 16px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.5); border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; background: #000; }
         .carousel-container img { width: 100%; display: block; object-fit: cover; max-height: 420px; }
         
@@ -128,15 +141,18 @@
 </head>
 <body>
 
-    <!-- 🎬 Loading 播放 MP4 视频与预加载遮罩 -->
+    <!-- 🎬 Loading 遮罩层：居中视频 + 提示文字 + 实时%进度 -->
     <div id="loading-overlay">
-        <!-- 请在此处放入你的 MP4 视频链接或本地路径 -->
-        <video id="loading-video" autoplay loop muted playsinline src="https://assets.mixkit.co/videos/preview/mixkit-stars-in-the-night-sky-4008-large.mp4"></video>
-        <div class="loading-text">LOADING MEMORIES...</div>
+        <div class="loading-video-container">
+            <!-- 📌 提示：如果本地有视频，请替换 src 为你的视频文件名，如 "loading.mp4" -->
+            <video id="loading-video" autoplay loop muted playsinline src="loading.mp4"></video>
+        </div>
+        <div class="loading-text">LOADING MEMORY</div>
+        <div class="loading-percentage" id="loading-percent">0%</div>
     </div>
 
-    <!-- 🎵 背景音乐 （音频链接可替换为你自己的直链地址） -->
-    <audio id="bgm" loop src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=ambient-piano-amp-strings-10711.mp3"></audio>
+    <!-- 🎵 背景音乐（请替换为你的 MP3 文件路径或直链，如 "bgm.mp3"） -->
+    <audio id="bgm" loop src="bgm.mp3"></audio>
 
     <div class="site-header">
         <h1>OUR JOURNEYS</h1>
@@ -146,13 +162,10 @@
     <div id="globe-container"></div>
     
     <div id="mascot-area">
-        <div class="travel-list">
-            <!-- 动态生成的列表会注入这里 -->
-        </div>
+        <div class="travel-list"></div>
         <div class="mascot">GUIDE</div>
     </div>
 
-    <!-- 升级后的四部分联动弹窗 -->
     <div id="memory-modal">
         <div class="modal-close" onclick="closeModal()">&times;</div>
         
@@ -175,7 +188,6 @@
         </div>
     </div>
 	
-    <!-- 全局放大查看器 (Lightbox) -->
     <div id="media-lightbox">
         <div class="lightbox-close" onclick="closeLightbox()">&times;</div>
         <img id="lightbox-img" src="" alt="放大照片">
@@ -238,17 +250,37 @@
 
         let groupedTravelData = {};
 
-        // 🖼️ 图片预加载辅助函数：在 Loading 阶段提前把所有照片下载完
-        function preloadImages(urls) {
-            return Promise.all(urls.map(url => {
-                return new Promise((resolve) => {
-                    if (!url) return resolve();
+        // 📊 带 % 进度的照片预加载器
+        function preloadImagesWithProgress(urls) {
+            return new Promise((resolve) => {
+                if (!urls || urls.length === 0) {
+                    updatePercentUI(100);
+                    return resolve();
+                }
+
+                let loadedCount = 0;
+                const total = urls.length;
+
+                urls.forEach((url) => {
                     const img = new Image();
                     img.src = url;
-                    img.onload = resolve;
-                    img.onerror = resolve; // 即使加载失败也继续，避免卡死
+                    
+                    const handleLoad = () => {
+                        loadedCount++;
+                        const percent = Math.floor((loadedCount / total) * 100);
+                        updatePercentUI(percent);
+                        if (loadedCount >= total) resolve();
+                    };
+
+                    img.onload = handleLoad;
+                    img.onerror = handleLoad; // 即使破损图片也不卡主流程
                 });
-            }));
+            });
+        }
+
+        function updatePercentUI(percent) {
+            const el = document.getElementById('loading-percent');
+            if (el) el.innerText = percent + '%';
         }
 
         async function fetchNotionData() {
@@ -256,7 +288,10 @@
                 const response = await fetch('/api/get-travels');
                 const data = await response.json();
                 
-                if (!data.results) return;
+                if (!data.results) {
+                    finishLoading();
+                    return;
+                }
 
                 groupedTravelData = {};
                 const travelListContainer = document.querySelector('.travel-list');
@@ -273,7 +308,6 @@
                     const lat = parseFloat(props['lat']?.number);
                     const lng = parseFloat(props['lng']?.number);
 
-                    // 收集要预加载的照片 URL
                     ['part1_photos', 'part2_photos', 'part4_pngs'].forEach(pName => {
                         if (props[pName]?.files) {
                             props[pName].files.forEach(f => {
@@ -296,7 +330,6 @@
                     }
                 });
 
-                // 排序与生成标志
                 for (const locationName in groupedTravelData) {
                     const locData = groupedTravelData[locationName];
                     locData.trips.sort((a, b) => a._parsedDate - b._parsedDate);
@@ -315,29 +348,30 @@
                     travelListContainer.innerHTML += itemHTML;
                 }
 
-                // 🚀 执行图片预加载
-                await preloadImages(allImageUrlsToPreload);
+                // 执行带 % 计数的图片预加载
+                await preloadImagesWithProgress(allImageUrlsToPreload);
 
-                // ✨ 所有照片预加载完成，隐藏 Loading 遮罩并平滑过渡展示地球
+                // 加载完毕，过过渡进入地球
                 finishLoading();
 
             } catch (error) {
                 console.error("❌ 后端连接失败：", error);
-                finishLoading(); // 出错也允许进入
+                finishLoading();
             }
         }
 
-        // 🎬 完成加载后播放动画与背景音乐
         function finishLoading() {
-            const loadingOverlay = document.getElementById('loading-overlay');
-            loadingOverlay.classList.add('hidden');
+            updatePercentUI(100);
+            setTimeout(() => {
+                const loadingOverlay = document.getElementById('loading-overlay');
+                loadingOverlay.classList.add('hidden');
 
-            // 自动播放背景音乐（需用户在页面上有任意点击交互或通过允许自动播放规则）
-            const bgm = document.getElementById('bgm');
-            bgm.play().catch(() => {
-                // 若受浏览器政策阻挡，则点击页面任意处后播放
-                window.addEventListener('click', () => { bgm.play(); }, { once: true });
-            });
+                // 播放背景音乐
+                const bgm = document.getElementById('bgm');
+                bgm.play().catch(() => {
+                    window.addEventListener('click', () => { bgm.play(); }, { once: true });
+                });
+            }, 400);
         }
 
         function createMarkerOnGlobe(lat, lon) {
@@ -377,7 +411,6 @@
             });
         }
 
-        // 相册状态管理
         let currentP1Index = 0;
         let p1PhotosArray = [];
         
@@ -448,7 +481,6 @@
             currentP1Index = 0; 
             currentP2Index = 0;
 
-            // ✨ Part 1: 文案在上，轮播在下（已无无故闪烁问题）
             let p1HTML = `
                 <div class="part1-text" style="text-align: center; font-size: 1.1rem; line-height: 1.7; margin-bottom: 20px; color: #F7E1D7; font-weight: 300;">
                     ${memory}
@@ -464,7 +496,6 @@
             `;
             document.getElementById('p1-content').innerHTML = p1HTML;
 
-            // ✨ Part 2: 地方风光 - 新增 NEXT / BACK 轮播功能
             let p2HTML = '';
             if (p2PhotosArray.length > 0) {
                 p2HTML = `
@@ -482,7 +513,6 @@
             }
             document.getElementById('p2-content').innerHTML = p2HTML;
 
-            // Part 3: Instagram Vlog 
             let p3HTML = '';
             part3Reels.forEach(url => {
                 let embedUrl = url.trim();
@@ -495,7 +525,6 @@
             });
             document.getElementById('p3-content').innerHTML = p3HTML || '<div style="color:rgba(247, 225, 215, 0.4); text-align: center;">暂无 Vlog 视频</div>';
 
-            // Part 4: PNG 小物件
             let p4HTML = '';
             part4Pngs.forEach(url => {
                 p4HTML += `<div class="png-item"><img src="${url}" alt="纪念物件"></div>`;
@@ -503,21 +532,18 @@
             document.getElementById('p4-content').innerHTML = p4HTML || '<div style="color:rgba(247, 225, 215, 0.4); text-align: center;">暂无专属纪念物件</div>';
         }
 
-        // --- Part 1 无闪烁轮播 ---
         function changeP1Photo(direction) {
             currentP1Index = (currentP1Index + direction + p1PhotosArray.length) % p1PhotosArray.length;
             const imgEl = document.getElementById('p1-main-img');
             imgEl.src = p1PhotosArray[currentP1Index];
         }
 
-        // --- Part 2 轮播 (NEXT / BACK) ---
         function changeP2Photo(direction) {
             currentP2Index = (currentP2Index + direction + p2PhotosArray.length) % p2PhotosArray.length;
             const imgEl = document.getElementById('p2-main-img');
             imgEl.src = p2PhotosArray[currentP2Index];
         }
 
-        // --- 全局放大查看器 (Lightbox) ---
         const lightbox = document.getElementById('media-lightbox');
         const lbImg = document.getElementById('lightbox-img');
         const lbIframe = document.getElementById('lightbox-iframe');
