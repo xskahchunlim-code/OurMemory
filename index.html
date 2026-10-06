@@ -24,6 +24,25 @@
             color: #F7E1D7; overflow: hidden;
         }
 
+        /* 🎬 Loading 视频遮罩层 */
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 99999; background: #020308;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        #loading-overlay.hidden {
+            opacity: 0; pointer-events: none; transform: scale(1.08);
+        }
+        #loading-video {
+            width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1; opacity: 0.6;
+        }
+        .loading-text {
+            position: relative; z-index: 2; font-size: 1.2rem; letter-spacing: 4px; color: var(--gold-main);
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.8); animation: blink 1.5s ease-in-out infinite;
+        }
+        @keyframes blink { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+
         #globe-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
 
         .site-header { position: absolute; top: 40px; left: 50%; transform: translateX(-50%); z-index: 10; text-align: center; pointer-events: none; }
@@ -41,19 +60,17 @@
         .travel-item:hover { background: rgba(212, 175, 55, 0.12); color: var(--gold-main); border-left-color: var(--gold-main); padding-left: 24px; }
         .travel-date { font-size: 0.65rem; color: rgba(247, 225, 215, 0.45); margin-bottom: 2px; }
 
-        /* 四部分切换的高级弹窗样式 */
+        /* 四部分切换的弹窗样式 */
         #memory-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -45%) scale(0.95); width: 85%; max-width: 950px; height: 75vh; background: var(--glass-bg); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid var(--glass-border); border-radius: 24px; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7); z-index: 100; display: flex; opacity: 0; visibility: hidden; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: none; overflow: hidden; }
         #memory-modal.active { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
         
         .modal-close { position: absolute; top: 20px; right: 25px; font-size: 1.8rem; cursor: pointer; color: #F7E1D7; opacity: 0.6; transition: opacity 0.3s; z-index: 10; }
         .modal-close:hover { opacity: 1; color: var(--gold-main); }
 
-        /* 弹窗左侧：导航切换栏 */
         .modal-sidebar { width: 260px; border-right: 1px solid rgba(212, 175, 55, 0.15); padding: 40px 20px; display: flex; flex-direction: column; background: rgba(0, 0, 0, 0.2); }
         .modal-location-title { font-size: 1.4rem; font-weight: 300; color: var(--gold-main); margin-bottom: 5px; }
         .modal-location-date { font-size: 0.75rem; color: rgba(247, 225, 215, 0.5); margin-bottom: 30px; }
         
-        /* ⭐️ 新增：多日期切换按钮样式 */
         #modal-date-container { display: none; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; }
         .date-switch-btn { background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.3); color: rgba(247, 225, 215, 0.8); padding: 6px 10px; border-radius: 8px; font-size: 0.7rem; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 4px; }
         .date-switch-btn:hover { background: rgba(212, 175, 55, 0.25); color: var(--gold-main); }
@@ -63,16 +80,10 @@
         .tab-btn:hover { background: rgba(212, 175, 55, 0.08); color: var(--gold-main); }
         .tab-btn.active { background: rgba(212, 175, 55, 0.15); color: var(--gold-main); border-color: rgba(212, 175, 55, 0.3); font-weight: 600; }
 
-        /* 弹窗右侧：内容动态展示区 */
         .modal-body { flex-grow: 1; padding: 40px; overflow-y: auto; position: relative; }
         .tab-content { display: none; animation: fadeIn 0.4s ease forwards; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* 各种媒体内容的精致排版 */
-        .part1-container { display: flex; gap: 30px; align-items: center; }
-        .part1-photo { width: 45%; border-radius: 12px; border: 1px solid var(--glass-border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-height: 300px; object-fit: cover; }
-        .part1-text { flex-grow: 1; font-size: 0.95rem; line-height: 1.8; color: rgba(247, 225, 215, 0.9); font-weight: 300; }
 
         .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
         .media-card { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 12px; overflow: hidden; padding: 10px; text-align: center; }
@@ -84,7 +95,7 @@
         .png-item:hover { transform: scale(1.1); background: rgba(212, 175, 55, 0.1); }
         .png-item img { max-width: 80%; max-height: 80%; object-fit: contain; }
 		
-		/* 全局照片/视频放大查看器 (Lightbox) */
+        /* 全局照片/视频放大查看器 (Lightbox) */
         #media-lightbox {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.9); z-index: 9999;
@@ -97,19 +108,17 @@
         #lightbox-img { max-width: 90%; max-height: 90%; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); display: none; }
         #lightbox-iframe { width: 90%; max-width: 420px; height: 85vh; border-radius: 16px; background: #000; display: none; }
 
-        /* Part 1 轮播与居中文案特效 */
-        .p1-carousel-container { position: relative; width: 100%; max-width: 550px; margin: 0 auto; border-radius: 16px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.5); border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; background: #000; }
-        .p1-carousel-container img { width: 100%; display: block; opacity: 0.8; transition: opacity 0.4s; }
+        /* Part 1 & Part 2 轮播图统一样式 */
+        .carousel-container { position: relative; width: 100%; max-width: 550px; margin: 0 auto; border-radius: 16px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.5); border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; background: #000; }
+        .carousel-container img { width: 100%; display: block; object-fit: cover; max-height: 420px; }
         
-        .p1-memory-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; text-align: center; font-size: 1.15rem; font-weight: 400; line-height: 1.7; color: #ffffff; text-shadow: 0 2px 15px rgba(0,0,0,0.9), 0 0 40px rgba(0,0,0,0.6); pointer-events: none; z-index: 2; }
-
-        .p1-nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.4); color: white; border: none; font-size: 1.5rem; padding: 10px 15px; cursor: pointer; transition: background 0.3s; z-index: 3; }
-        .p1-nav-btn:hover { background: var(--gold-main); }
-        .p1-nav-btn.left { left: 0; border-radius: 0 8px 8px 0; }
-        .p1-nav-btn.right { right: 0; border-radius: 8px 0 0 8px; }
+        .nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; font-size: 1.5rem; padding: 12px 16px; cursor: pointer; transition: background 0.3s; z-index: 3; }
+        .nav-btn:hover { background: var(--gold-main); color: #000; }
+        .nav-btn.left { left: 0; border-radius: 0 8px 8px 0; }
+        .nav-btn.right { right: 0; border-radius: 8px 0 0 8px; }
         
-        .p1-zoom-btn { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 1rem; z-index: 3; transition: all 0.3s; }
-        .p1-zoom-btn:hover { background: var(--gold-main); transform: scale(1.1); }
+        .zoom-btn { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; z-index: 3; transition: all 0.3s; }
+        .zoom-btn:hover { background: var(--gold-main); color: #000; transform: scale(1.05); }
 
         .iframe-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.15); cursor: zoom-in; transition: all 0.3s; z-index: 10; }
         .iframe-overlay:hover { background: rgba(0,0,0,0.4); }
@@ -118,6 +127,17 @@
     </style>
 </head>
 <body>
+
+    <!-- 🎬 Loading 播放 MP4 视频与预加载遮罩 -->
+    <div id="loading-overlay">
+        <!-- 请在此处放入你的 MP4 视频链接或本地路径 -->
+        <video id="loading-video" autoplay loop muted playsinline src="https://assets.mixkit.co/videos/preview/mixkit-stars-in-the-night-sky-4008-large.mp4"></video>
+        <div class="loading-text">LOADING MEMORIES...</div>
+    </div>
+
+    <!-- 🎵 背景音乐 （音频链接可替换为你自己的直链地址） -->
+    <audio id="bgm" loop src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=ambient-piano-amp-strings-10711.mp3"></audio>
+
     <div class="site-header">
         <h1>OUR JOURNEYS</h1>
         <p>专属时空纪念册</p>
@@ -136,14 +156,9 @@
     <div id="memory-modal">
         <div class="modal-close" onclick="closeModal()">&times;</div>
         
-        <!-- 左侧切换栏 -->
         <div class="modal-sidebar">
             <div class="modal-location-title" id="modal-title">地点名称</div>
-            
-            <!-- 原单一日期 -->
             <div class="modal-location-date" id="modal-date">日期</div>
-            
-            <!-- ⭐️ 新增：多日期切换器 (如果只去过一次则隐藏) -->
             <div id="modal-date-container"></div>
             
             <button class="tab-btn active" onclick="switchTab('part1')">✨ 1. 合照与回忆</button>
@@ -152,10 +167,9 @@
             <button class="tab-btn" onclick="switchTab('part4')">🏷️ 4. 纪念小物件</button>
         </div>
 
-        <!-- 右侧内容展示区 -->
         <div class="modal-body">
-            <div id="part1" class="tab-content active"><div class="part1-container" id="p1-content"></div></div>
-            <div id="part2" class="tab-content"><div class="media-grid" id="p2-content"></div></div>
+            <div id="part1" class="tab-content active"><div id="p1-content"></div></div>
+            <div id="part2" class="tab-content"><div id="p2-content"></div></div>
             <div id="part3" class="tab-content"><div class="media-grid" id="p3-content"></div></div>
             <div id="part4" class="tab-content"><div class="png-showcase" id="p4-content"></div></div>
         </div>
@@ -222,10 +236,21 @@
         dirLight.position.set(200, 100, 150);
         scene.add(dirLight);
 
-        // ⭐️ 全局存储分组后的地点数据
         let groupedTravelData = {};
 
-        // 从 Vercel 后端安全拉取 Notion 数据
+        // 🖼️ 图片预加载辅助函数：在 Loading 阶段提前把所有照片下载完
+        function preloadImages(urls) {
+            return Promise.all(urls.map(url => {
+                return new Promise((resolve) => {
+                    if (!url) return resolve();
+                    const img = new Image();
+                    img.src = url;
+                    img.onload = resolve;
+                    img.onerror = resolve; // 即使加载失败也继续，避免卡死
+                });
+            }));
+        }
+
         async function fetchNotionData() {
             try {
                 const response = await fetch('/api/get-travels');
@@ -236,8 +261,9 @@
                 groupedTravelData = {};
                 const travelListContainer = document.querySelector('.travel-list');
                 travelListContainer.innerHTML = '';
+                
+                let allImageUrlsToPreload = [];
 
-                // 1. 数据合并逻辑：将同地点的记录归类到一个对象里
                 data.results.forEach((page) => {
                     const props = page.properties;
                     if (!props['name'] || props['name'].title.length === 0) return;
@@ -247,12 +273,21 @@
                     const lat = parseFloat(props['lat']?.number);
                     const lng = parseFloat(props['lng']?.number);
 
+                    // 收集要预加载的照片 URL
+                    ['part1_photos', 'part2_photos', 'part4_pngs'].forEach(pName => {
+                        if (props[pName]?.files) {
+                            props[pName].files.forEach(f => {
+                                const u = f.file?.url || f.external?.url;
+                                if (u) allImageUrlsToPreload.push(u);
+                            });
+                        }
+                    });
+
                     if (!isNaN(lat) && !isNaN(lng)) {
                         if (!groupedTravelData[name]) {
                             groupedTravelData[name] = { lat, lng, trips: [] };
                         }
                         
-                        // 为了之后能正确排序，解析日期格式
                         let parsedDate = new Date(dateStr);
                         if (isNaN(parsedDate)) parsedDate = new Date('2000-01-01');
                         page._parsedDate = parsedDate;
@@ -261,16 +296,12 @@
                     }
                 });
 
-                // 2. 排序与渲染左下角菜单 (只渲染独一无二的地点)
+                // 排序与生成标志
                 for (const locationName in groupedTravelData) {
                     const locData = groupedTravelData[locationName];
-                    
-                    // 按日期升序排列：最早的时间排在 index 0
                     locData.trips.sort((a, b) => a._parsedDate - b._parsedDate);
-
                     createMarkerOnGlobe(locData.lat, locData.lng);
                     
-                    // 如果去过多于1次，日期栏会显示去过的总次数，否则直接显示时间
                     const dateDisplay = locData.trips.length > 1 
                         ? `👣 重游了 ${locData.trips.length} 次` 
                         : (locData.trips[0].properties['date']?.date?.start || '未知日期');
@@ -283,9 +314,30 @@
                     `;
                     travelListContainer.innerHTML += itemHTML;
                 }
+
+                // 🚀 执行图片预加载
+                await preloadImages(allImageUrlsToPreload);
+
+                // ✨ 所有照片预加载完成，隐藏 Loading 遮罩并平滑过渡展示地球
+                finishLoading();
+
             } catch (error) {
                 console.error("❌ 后端连接失败：", error);
+                finishLoading(); // 出错也允许进入
             }
+        }
+
+        // 🎬 完成加载后播放动画与背景音乐
+        function finishLoading() {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            loadingOverlay.classList.add('hidden');
+
+            // 自动播放背景音乐（需用户在页面上有任意点击交互或通过允许自动播放规则）
+            const bgm = document.getElementById('bgm');
+            bgm.play().catch(() => {
+                // 若受浏览器政策阻挡，则点击页面任意处后播放
+                window.addEventListener('click', () => { bgm.play(); }, { once: true });
+            });
         }
 
         function createMarkerOnGlobe(lat, lon) {
@@ -308,7 +360,6 @@
 
         let isAutoRotating = true;
 
-        // 修复地球自转导致的点击偏移 (参数现在传入了地点的名称)
         function flyToLocation(lat, lon, locationName) {
             isAutoRotating = false; 
 
@@ -326,12 +377,15 @@
             });
         }
 
-        // 全局相册状态控制
+        // 相册状态管理
         let currentP1Index = 0;
         let p1PhotosArray = [];
+        
+        let currentP2Index = 0;
+        let p2PhotosArray = [];
+        
         let currentOpenLocation = ''; 
 
-        // ⭐️ 打开弹窗主函数
         const modal = document.getElementById('memory-modal');
         function openModal(locationName) {
             currentOpenLocation = locationName;
@@ -340,43 +394,35 @@
 
             document.getElementById('modal-title').innerText = locationName;
 
-            // 处理日期切换器逻辑
             const dateContainer = document.getElementById('modal-date-container');
             const singleDateText = document.getElementById('modal-date');
 
             if (locData.trips.length > 1) {
-                // 多次旅行：渲染切换按钮
                 let btnsHTML = '';
                 locData.trips.forEach((trip, idx) => {
                     const d = trip.properties['date']?.date?.start || '未知日期';
-                    // 默认高亮第一个（最早的日期）
                     const activeClass = idx === 0 ? 'active' : '';
                     btnsHTML += `<button class="date-switch-btn ${activeClass}" onclick="renderTripContent(${idx})">🗓️ ${d}</button>`;
                 });
                 dateContainer.innerHTML = btnsHTML;
                 dateContainer.style.display = 'flex';
-                singleDateText.style.display = 'none'; // 隐藏单一文字
+                singleDateText.style.display = 'none';
             } else {
-                // 只有一次旅行：保持原样极简显示
                 dateContainer.style.display = 'none';
                 singleDateText.innerText = locData.trips[0].properties['date']?.date?.start || '未知日期';
                 singleDateText.style.display = 'block';
             }
 
-            // 首次打开，渲染最早的那次记忆 (index 0)
             renderTripContent(0);
-            
             switchTab('part1');
             modal.classList.add('active');
         }
 
-        // ⭐️ 核心渲染/切换函数
         function renderTripContent(tripIndex) {
             const locData = groupedTravelData[currentOpenLocation];
             const row = locData.trips[tripIndex];
             const props = row.properties;
             
-            // 如果有多日期，更新按钮高亮状态
             if (locData.trips.length > 1) {
                 const btns = document.querySelectorAll('.date-switch-btn');
                 btns.forEach((btn, idx) => {
@@ -393,37 +439,48 @@
             }
 
             p1PhotosArray = getUploadedImages('part1_photos');
-            const part2Photos = getUploadedImages('part2_photos');
+            p2PhotosArray = getUploadedImages('part2_photos');
             const part4Pngs   = getUploadedImages('part4_pngs');
             const reelsText = props['part3_reels']?.rich_text[0]?.plain_text || '';
             const part3Reels = reelsText ? reelsText.split(/[,\n\s]+/).filter(url => url.includes('http')) : [];
 
             if (p1PhotosArray.length === 0) p1PhotosArray = ['https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600'];
             currentP1Index = 0; 
+            currentP2Index = 0;
 
-            // Part 1 排版
+            // ✨ Part 1: 文案在上，轮播在下（已无无故闪烁问题）
             let p1HTML = `
-                <div class="part1-text" style="text-align: center; font-size: 1.15rem; line-height: 1.7; margin-bottom: 25px; color: var(--text-main); font-weight: 400;">
+                <div class="part1-text" style="text-align: center; font-size: 1.1rem; line-height: 1.7; margin-bottom: 20px; color: #F7E1D7; font-weight: 300;">
                     ${memory}
                 </div>
-                <div class="p1-carousel-container" style="position: relative; width: 100%; max-width: 550px; margin: 0 auto; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15); background: #000;">
-                    <img id="p1-main-img" src="${p1PhotosArray[0]}" alt="合照" style="width: 100%; display: block; transition: opacity 0.4s; opacity: 1;">
-                    <button class="p1-zoom-btn" onclick="openLightbox('image', p1PhotosArray[currentP1Index])" style="position:absolute; top:15px; right:15px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2); color:white; padding:8px 12px; border-radius:8px; cursor:pointer; z-index:3;">🔍 放大</button>
+                <div class="carousel-container">
+                    <img id="p1-main-img" src="${p1PhotosArray[0]}" alt="合照">
+                    <button class="zoom-btn" onclick="openLightbox('image', p1PhotosArray[currentP1Index])">🔍 放大</button>
                     ${p1PhotosArray.length > 1 ? `
-                        <button class="p1-nav-btn left" onclick="changeP1Photo(-1)" style="position:absolute; top:50%; left:0; transform:translateY(-50%); background:rgba(0,0,0,0.4); color:white; border:none; font-size:1.5rem; padding:10px 15px; cursor:pointer; z-index:3;">&#10094;</button>
-                        <button class="p1-nav-btn right" onclick="changeP1Photo(1)" style="position:absolute; top:50%; right:0; transform:translateY(-50%); background:rgba(0,0,0,0.4); color:white; border:none; font-size:1.5rem; padding:10px 15px; cursor:pointer; z-index:3;">&#10095;</button>
+                        <button class="nav-btn left" onclick="changeP1Photo(-1)">&#10094;</button>
+                        <button class="nav-btn right" onclick="changeP1Photo(1)">&#10095;</button>
                     ` : ''}
                 </div>
             `;
             document.getElementById('p1-content').innerHTML = p1HTML;
-            document.getElementById('p1-content').style.display = 'block';
 
-            // Part 2: 风景照片
+            // ✨ Part 2: 地方风光 - 新增 NEXT / BACK 轮播功能
             let p2HTML = '';
-            part2Photos.forEach(url => {
-                p2HTML += `<div class="media-card" style="cursor: zoom-in;" onclick="openLightbox('image', '${url}')"><img src="${url}" alt="风景"></div>`;
-            });
-            document.getElementById('p2-content').innerHTML = p2HTML || '<div style="color:rgba(127,140,141,0.6)">暂无风光照片</div>';
+            if (p2PhotosArray.length > 0) {
+                p2HTML = `
+                    <div class="carousel-container">
+                        <img id="p2-main-img" src="${p2PhotosArray[0]}" alt="风光照片">
+                        <button class="zoom-btn" onclick="openLightbox('image', p2PhotosArray[currentP2Index])">🔍 放大</button>
+                        ${p2PhotosArray.length > 1 ? `
+                            <button class="nav-btn left" onclick="changeP2Photo(-1)">&#10094;</button>
+                            <button class="nav-btn right" onclick="changeP2Photo(1)">&#10095;</button>
+                        ` : ''}
+                    </div>
+                `;
+            } else {
+                p2HTML = '<div style="color:rgba(247, 225, 215, 0.4); text-align: center; padding: 40px;">暂无风光照片</div>';
+            }
+            document.getElementById('p2-content').innerHTML = p2HTML;
 
             // Part 3: Instagram Vlog 
             let p3HTML = '';
@@ -436,31 +493,31 @@
                     <div class="iframe-overlay" onclick="openLightbox('video', '${embedUrl}')"></div>
                 </div>`;
             });
-            document.getElementById('p3-content').innerHTML = p3HTML || '<div style="color:rgba(127,140,141,0.6)">暂无 Vlog 视频</div>';
+            document.getElementById('p3-content').innerHTML = p3HTML || '<div style="color:rgba(247, 225, 215, 0.4); text-align: center;">暂无 Vlog 视频</div>';
 
             // Part 4: PNG 小物件
             let p4HTML = '';
             part4Pngs.forEach(url => {
                 p4HTML += `<div class="png-item"><img src="${url}" alt="纪念物件"></div>`;
             });
-            document.getElementById('p4-content').innerHTML = p4HTML || '<div style="color:rgba(127,140,141,0.6)">暂无专属纪念物件</div>';
+            document.getElementById('p4-content').innerHTML = p4HTML || '<div style="color:rgba(247, 225, 215, 0.4); text-align: center;">暂无专属纪念物件</div>';
         }
 
-        // --- Part 1 轮播切换逻辑 ---
+        // --- Part 1 无闪烁轮播 ---
         function changeP1Photo(direction) {
-            currentP1Index += direction;
-            if (currentP1Index < 0) currentP1Index = p1PhotosArray.length - 1;
-            if (currentP1Index >= p1PhotosArray.length) currentP1Index = 0;
-            
+            currentP1Index = (currentP1Index + direction + p1PhotosArray.length) % p1PhotosArray.length;
             const imgEl = document.getElementById('p1-main-img');
-            imgEl.style.opacity = 0; 
-            setTimeout(() => {
-                imgEl.src = p1PhotosArray[currentP1Index];
-                imgEl.style.opacity = 1; 
-            }, 300);
+            imgEl.src = p1PhotosArray[currentP1Index];
         }
 
-        // --- 全局沉浸式放大 (Lightbox) 逻辑 ---
+        // --- Part 2 轮播 (NEXT / BACK) ---
+        function changeP2Photo(direction) {
+            currentP2Index = (currentP2Index + direction + p2PhotosArray.length) % p2PhotosArray.length;
+            const imgEl = document.getElementById('p2-main-img');
+            imgEl.src = p2PhotosArray[currentP2Index];
+        }
+
+        // --- 全局放大查看器 (Lightbox) ---
         const lightbox = document.getElementById('media-lightbox');
         const lbImg = document.getElementById('lightbox-img');
         const lbIframe = document.getElementById('lightbox-iframe');
@@ -490,12 +547,11 @@
             if (e.target === lightbox) closeLightbox();
         });
 		
-        // 左侧菜单切换逻辑
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-            event && event.currentTarget && event.currentTarget.classList.add('active');
+            if (event && event.currentTarget) event.currentTarget.classList.add('active');
         }
 
         function closeModal() { 
