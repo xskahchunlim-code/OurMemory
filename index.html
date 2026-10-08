@@ -66,7 +66,7 @@
         .site-header p { font-size: 0.75rem; color: rgba(247, 225, 215, 0.5); letter-spacing: 2px; margin-top: 5px; }
 
         #mascot-area { position: absolute; bottom: 40px; left: 40px; z-index: 10; }
-        .mascot { width: 60px; height: 60px; background: radial-gradient(circle at 30% 30%, #f3e5ab, var(--gold-main) 70%, #8a7322); border-radius: 50%; box-shadow: 0 0 25px rgba(212, 175, 55, 0.4); cursor: pointer; animation: float 3s ease-in-out infinite; display: flex; justify-content: center; align-items: center; font-weight: 600; font-size: 0.8rem; color: #050814; transition: transform 0.3s ease; user-select: none; }
+        .mascot { width: 160px; height: 160px; background: radial-gradient(circle at 30% 30%, #f3e5ab, var(--gold-main) 70%, #8a7322); border-radius: 50%; box-shadow: 0 0 25px rgba(212, 175, 55, 0.4); cursor: pointer; animation: float 3s ease-in-out infinite; display: flex; justify-content: center; align-items: center; font-weight: 600; font-size: 0.8rem; color: #050814; transition: transform 0.3s ease; user-select: none; }
         .mascot:hover { transform: scale(1.08); box-shadow: 0 0 35px rgba(212, 175, 55, 0.7); }
         @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
 
@@ -481,12 +481,16 @@ const container = document.getElementById('globe-container');
                         </div>
                     `;
 
-                    // 根据地点名称分类到 Local 或 Oversea 菜单
-                    if (locationName.includes('马来西亚') || locationName.includes('Malaysia')) {
-                        if (localListContainer) localListContainer.innerHTML += itemHTML;
-                    } else {
-                        if (overseaListContainer) overseaListContainer.innerHTML += itemHTML;
-                    }
+         // 1. 判断该地点是否勾选了 Checkbox（海外/Oversea）
+// 遍历该地点下的 trips，只要有记录勾选了 overseaornot，或者取第一个 trip 的勾选状态
+const isOversea = locData.trips.some(trip => trip.properties['overseaornot']?.checkbox === true);
+
+// 2. 根据 Checkbox 状态渲染到对应列表中
+if (isOversea) {
+    if (overseaListContainer) overseaListContainer.innerHTML += itemHTML;
+} else {
+    if (localListContainer) localListContainer.innerHTML += itemHTML;
+}
                 }
 
                 // 预加载所有照片并更新进度%
