@@ -326,7 +326,7 @@
     </div>
 	
     <script>
-        const container = document.getElementById('globe-container');
+const container = document.getElementById('globe-container');
         const scene = new THREE.Scene();
 
         function latLonToVector3(lat, lon, radius) {
@@ -339,7 +339,7 @@
         }
 
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        // 初始镜头位置设得较远（例如距离 550），用于做进场放大过度动画
+        // 初始镜头位置设得较远，用于做进场放大过度动画
         const initialCameraPos = latLonToVector3(4.0, 102.0, 550);
         const targetCameraPos = latLonToVector3(4.0, 102.0, 320);
         camera.position.copy(initialCameraPos); 
@@ -425,8 +425,11 @@
                 }
 
                 groupedTravelData = {};
-                const travelListContainer = document.querySelector('.travel-list');
-                travelListContainer.innerHTML = '';
+                const localListContainer = document.getElementById('local-list');
+                const overseaListContainer = document.getElementById('oversea-list');
+                
+                if (localListContainer) localListContainer.innerHTML = '';
+                if (overseaListContainer) overseaListContainer.innerHTML = '';
                 
                 let allImageUrlsToPreload = [];
 
@@ -464,6 +467,7 @@
                 for (const locationName in groupedTravelData) {
                     const locData = groupedTravelData[locationName];
                     locData.trips.sort((a, b) => a._parsedDate - b._parsedDate);
+
                     createMarkerOnGlobe(locData.lat, locData.lng);
                     
                     const dateDisplay = locData.trips.length > 1 
@@ -476,9 +480,16 @@
                             <span>${locationName}</span>
                         </div>
                     `;
-                    travelListContainer.innerHTML += itemHTML;
+
+                    // 根据地点名称分类到 Local 或 Oversea 菜单
+                    if (locationName.includes('马来西亚') || locationName.includes('Malaysia')) {
+                        if (localListContainer) localListContainer.innerHTML += itemHTML;
+                    } else {
+                        if (overseaListContainer) overseaListContainer.innerHTML += itemHTML;
+                    }
                 }
 
+                // 预加载所有照片并更新进度%
                 await preloadImagesWithProgress(allImageUrlsToPreload);
                 finishLoading();
 
@@ -495,7 +506,7 @@
                 const loadingOverlay = document.getElementById('loading-overlay');
                 loadingOverlay.classList.add('hidden');
 
-                // 使用 GSAP 让地球平滑推近变大（镜头从远处靠近）
+                // 使用 GSAP 让地球平滑推近变大
                 gsap.to(camera.position, {
                     x: targetCameraPos.x,
                     y: targetCameraPos.y,
@@ -555,7 +566,7 @@
         let p1PhotosArray = [];
         let p1AutoPlayTimer = null;
 
-        let activeGalleryPhotos = []; // 当前查看的相册列表（用于 Lightbox 切换）
+        let activeGalleryPhotos = [];
         let activeGalleryIndex = 0;
         let lightboxAutoPlayTimer = null;
 
@@ -616,7 +627,7 @@
 
             p1PhotosArray = getUploadedImages('part1_photos');
             activeGalleryPhotos = getUploadedImages('part2_photos');
-            const part4Pngs   = getUploadedImages('part4_pngs');
+            const part4Pngs = getUploadedImages('part4_pngs');
             const reelsText = props['part3_reels']?.rich_text[0]?.plain_text || '';
             const part3Reels = reelsText ? reelsText.split(/[,\n\s]+/).filter(url => url.includes('http')) : [];
 
@@ -638,9 +649,9 @@
                 </div>
             `;
             document.getElementById('p1-content').innerHTML = p1HTML;
-            startP1AutoPlay(); // 启动 5s 自动轮播
+            startP1AutoPlay();
 
-            // Part 2: 保留风景网格预览，点击可进入带有 Next/Prev 的放大影院
+            // Part 2: 风景网格
             let p2HTML = '';
             if (activeGalleryPhotos.length > 0) {
                 activeGalleryPhotos.forEach((url, idx) => {
@@ -672,7 +683,7 @@
             document.getElementById('p4-content').innerHTML = p4HTML || '<div style="color:rgba(247, 225, 215, 0.4); text-align: center;">暂无专属纪念物件</div>';
         }
 
-        // ⏱️ Part 1 自动 5 秒轮播
+        // Part 1 自动轮播
         function startP1AutoPlay() {
             stopP1AutoPlay();
             if (p1PhotosArray.length > 1) {
@@ -689,7 +700,7 @@
             if (imgEl) imgEl.src = p1PhotosArray[currentP1Index];
         }
 
-        // 🔍 全局 Lightbox 放大模式 (支持 Part 2 点进去上一张/下一张，并且自动 5 秒切换)
+        // Lightbox 查看器
         const lightbox = document.getElementById('media-lightbox');
         const lbImg = document.getElementById('lightbox-img');
         const lbIframe = document.getElementById('lightbox-iframe');
@@ -707,7 +718,6 @@
                     activeGalleryIndex = startIndex;
                     lbImg.src = currentLightboxList[activeGalleryIndex];
 
-                    // 多于1张时才显示 Next/Prev 按钮，并开启 5s 自动播放
                     if (currentLightboxList.length > 1) {
                         lbPrevBtn.style.display = 'block';
                         lbNextBtn.style.display = 'block';
@@ -744,11 +754,9 @@
                 lbImg.src = currentLightboxList[activeGalleryIndex];
                 lbImg.style.opacity = 1;
             }, 150);
-            // 手动翻页后重置 5s 倒计时
             startLightboxAutoPlay();
         }
 
-        // ⏱️ 全局 Lightbox 放大查看时的 5 秒自动翻页
         function startLightboxAutoPlay() {
             stopLightboxAutoPlay();
             if (currentLightboxList.length > 1) {
@@ -768,7 +776,6 @@
             }, 300);
         }
 
-        // 键盘左右键翻页支持
         window.addEventListener('keydown', (e) => {
             if (!lightbox.classList.contains('active')) return;
             if (e.key === 'ArrowLeft') navigateLightbox(-1);
@@ -807,109 +814,30 @@
             renderer.setSize(window.innerWidth, window.innerHeight); 
         });
 
+        // 菜单切换逻辑
+        function toggleTravelMenu() {
+            const menu = document.getElementById('travel-menu');
+            menu.classList.toggle('active');
+            showCategoryMenu();
+        }
 
-
-// 开关 GUIDE 菜单面板
-function toggleTravelMenu() {
-    const menu = document.getElementById('travel-menu');
-    menu.classList.toggle('active');
-    // 每次打开默认回到第一级菜单
-    showCategoryMenu();
-}
-
-// 切换显示二层菜单 (local / oversea)
-function showSubMenu(type) {
-    document.getElementById('menu-category').style.display = 'none';
-    if (type === 'local') {
-        document.getElementById('menu-local').style.display = 'block';
-        document.getElementById('menu-oversea').style.display = 'none';
-    } else {
-        document.getElementById('menu-oversea').style.display = 'block';
-        document.getElementById('menu-local').style.display = 'none';
-    }
-}
-
-// 返回一级菜单
-function showCategoryMenu() {
-    document.getElementById('menu-category').style.display = 'block';
-    document.getElementById('menu-local').style.display = 'none';
-    document.getElementById('menu-oversea').style.display = 'none';
-}
-
-// ⭐️ 更新 fetchNotionData 函数中的渲染逻辑：按国别自动分类
-async function fetchNotionData() {
-    try {
-        const response = await fetch('/api/get-travels');
-        const data = await response.json();
-        
-        if (!data.results) return;
-
-        groupedTravelData = {};
-        const localListContainer = document.getElementById('local-list');
-        const overseaListContainer = document.getElementById('oversea-list');
-        
-        localListContainer.innerHTML = '';
-        overseaListContainer.innerHTML = '';
-
-        // 1. 数据合并逻辑
-        data.results.forEach((page) => {
-            const props = page.properties;
-            if (!props['name'] || props['name'].title.length === 0) return;
-
-            const name = props['name'].title[0].plain_text;
-            const dateStr = props['date']?.date?.start || '未知日期';
-            const lat = parseFloat(props['lat']?.number);
-            const lng = parseFloat(props['lng']?.number);
-
-            if (!isNaN(lat) && !isNaN(lng)) {
-                if (!groupedTravelData[name]) {
-                    groupedTravelData[name] = { lat, lng, trips: [] };
-                }
-                
-                let parsedDate = new Date(dateStr);
-                if (isNaN(parsedDate)) parsedDate = new Date('2000-01-01');
-                page._parsedDate = parsedDate;
-                
-                groupedTravelData[name].trips.push(page);
-            }
-        });
-
-        // 2. 渲染分类列表
-        for (const locationName in groupedTravelData) {
-            const locData = groupedTravelData[locationName];
-            locData.trips.sort((a, b) => a._parsedDate - b._parsedDate);
-
-            createMarkerOnGlobe(locData.lat, locData.lng);
-            
-            const dateDisplay = locData.trips.length > 1 
-                ? `👣 重游了 ${locData.trips.length} 次` 
-                : (locData.trips[0].properties['date']?.date?.start || '未知日期');
-
-            const itemHTML = `
-                <div class="travel-item" onclick="flyToLocation(${locData.lat}, ${locData.lng}, '${locationName}')">
-                    <span class="travel-date">${dateDisplay}</span>
-                    <span>${locationName}</span>
-                </div>
-            `;
-
-            // 判断是否包含“马来西亚”或者“Malaysia”
-            if (locationName.includes('马来西亚') || locationName.includes('Malaysia')) {
-                localListContainer.innerHTML += itemHTML;
+        function showSubMenu(type) {
+            document.getElementById('menu-category').style.display = 'none';
+            if (type === 'local') {
+                document.getElementById('menu-local').style.display = 'block';
+                document.getElementById('menu-oversea').style.display = 'none';
             } else {
-                overseaListContainer.innerHTML += itemHTML;
+                document.getElementById('menu-oversea').style.display = 'block';
+                document.getElementById('menu-local').style.display = 'none';
             }
         }
-    } catch (error) {
-        console.error("❌ 后端连接失败：", error);
-    }
-}
 
+        function showCategoryMenu() {
+            document.getElementById('menu-category').style.display = 'block';
+            document.getElementById('menu-local').style.display = 'none';
+            document.getElementById('menu-oversea').style.display = 'none';
+        }
 
-
-
-
-
-
-    </script>
+        </script>
 </body>
 </html>
