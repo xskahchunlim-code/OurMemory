@@ -151,6 +151,88 @@
         .iframe-overlay:hover { background: rgba(0,0,0,0.4); }
         .iframe-overlay::after { content: '🔍 点击全屏播放'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; opacity: 0; font-weight: bold; transition: opacity 0.3s; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
         .iframe-overlay:hover::after { opacity: 1; }
+
+
+        /* 导航总面板 */
+.travel-menu-panel {
+    position: absolute;
+    bottom: 80px;
+    left: 0;
+    width: 250px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 15px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(15px);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+}
+
+.travel-menu-panel.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* 一级分类按钮 */
+.menu-option-btn {
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    background: rgba(212, 175, 55, 0.08);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-radius: 10px;
+    color: #F7E1D7;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    transition: all 0.25s;
+}
+
+.menu-option-btn:hover {
+    background: rgba(212, 175, 55, 0.25);
+    color: var(--gold-main);
+    transform: translateX(3px);
+}
+
+/* 返回按钮 */
+.menu-back-btn {
+    font-size: 0.75rem;
+    color: var(--gold-main);
+    cursor: pointer;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed rgba(212, 175, 55, 0.2);
+    transition: opacity 0.2s;
+}
+
+.menu-back-btn:hover {
+    opacity: 0.8;
+}
+
+/* 地点列表条目 */
+.travel-item {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    border-left: 2px solid transparent;
+    border-radius: 6px;
+}
+
+.travel-item:hover {
+    background: rgba(212, 175, 55, 0.12);
+    color: var(--gold-main);
+    border-left-color: var(--gold-main);
+    padding-left: 16px;
+}
     </style>
 </head>
 <body>
@@ -174,10 +256,43 @@
     
     <div id="globe-container"></div>
     
-    <div id="mascot-area">
-        <div class="travel-list"></div>
-        <div class="mascot">GUIDE</div>
+<div id="mascot-area">
+    <!-- 展开后的级联菜单面板 -->
+    <div class="travel-menu-panel" id="travel-menu">
+        <!-- 一级菜单：选择分类 -->
+        <div class="menu-level-1" id="menu-category">
+            <div class="menu-option-btn" onclick="showSubMenu('local')">
+                <span>🇲🇾 Local (马来西亚)</span>
+                <span>➔</span>
+            </div>
+            <div class="menu-option-btn" onclick="showSubMenu('oversea')">
+                <span>✈️ Oversea (海外)</span>
+                <span>➔</span>
+            </div>
+        </div>
+
+        <!-- 二级菜单：Local (马来西亚地点) -->
+        <div class="menu-level-2" id="menu-local" style="display: none;">
+            <div class="menu-back-btn" onclick="showCategoryMenu()">⬅️ 返回选择</div>
+            <div class="travel-list-content" id="local-list">
+                <!-- 动态注入马来西亚的地点列表 -->
+            </div>
+        </div>
+
+        <!-- 二级菜单：Oversea (海外地点) -->
+        <div class="menu-level-2" id="menu-oversea" style="display: none;">
+            <div class="menu-back-btn" onclick="showCategoryMenu()">⬅️ 返回选择</div>
+            <div class="travel-list-content" id="oversea-list">
+                <!-- 动态注入海外国家的地点列表 -->
+            </div>
+        </div>
     </div>
+
+    <!-- 自定义 PNG 图标 -->
+    <div class="mascot" onclick="toggleTravelMenu()">
+        <img src="mascot.png" alt="GUIDE" style="width: 100%; height: 100%; object-fit: contain;">
+    </div>
+</div>
 
     <div id="memory-modal">
         <div class="modal-close" onclick="closeModal()">&times;</div>
@@ -691,6 +806,110 @@
             camera.updateProjectionMatrix(); 
             renderer.setSize(window.innerWidth, window.innerHeight); 
         });
+
+
+
+// 开关 GUIDE 菜单面板
+function toggleTravelMenu() {
+    const menu = document.getElementById('travel-menu');
+    menu.classList.toggle('active');
+    // 每次打开默认回到第一级菜单
+    showCategoryMenu();
+}
+
+// 切换显示二层菜单 (local / oversea)
+function showSubMenu(type) {
+    document.getElementById('menu-category').style.display = 'none';
+    if (type === 'local') {
+        document.getElementById('menu-local').style.display = 'block';
+        document.getElementById('menu-oversea').style.display = 'none';
+    } else {
+        document.getElementById('menu-oversea').style.display = 'block';
+        document.getElementById('menu-local').style.display = 'none';
+    }
+}
+
+// 返回一级菜单
+function showCategoryMenu() {
+    document.getElementById('menu-category').style.display = 'block';
+    document.getElementById('menu-local').style.display = 'none';
+    document.getElementById('menu-oversea').style.display = 'none';
+}
+
+// ⭐️ 更新 fetchNotionData 函数中的渲染逻辑：按国别自动分类
+async function fetchNotionData() {
+    try {
+        const response = await fetch('/api/get-travels');
+        const data = await response.json();
+        
+        if (!data.results) return;
+
+        groupedTravelData = {};
+        const localListContainer = document.getElementById('local-list');
+        const overseaListContainer = document.getElementById('oversea-list');
+        
+        localListContainer.innerHTML = '';
+        overseaListContainer.innerHTML = '';
+
+        // 1. 数据合并逻辑
+        data.results.forEach((page) => {
+            const props = page.properties;
+            if (!props['name'] || props['name'].title.length === 0) return;
+
+            const name = props['name'].title[0].plain_text;
+            const dateStr = props['date']?.date?.start || '未知日期';
+            const lat = parseFloat(props['lat']?.number);
+            const lng = parseFloat(props['lng']?.number);
+
+            if (!isNaN(lat) && !isNaN(lng)) {
+                if (!groupedTravelData[name]) {
+                    groupedTravelData[name] = { lat, lng, trips: [] };
+                }
+                
+                let parsedDate = new Date(dateStr);
+                if (isNaN(parsedDate)) parsedDate = new Date('2000-01-01');
+                page._parsedDate = parsedDate;
+                
+                groupedTravelData[name].trips.push(page);
+            }
+        });
+
+        // 2. 渲染分类列表
+        for (const locationName in groupedTravelData) {
+            const locData = groupedTravelData[locationName];
+            locData.trips.sort((a, b) => a._parsedDate - b._parsedDate);
+
+            createMarkerOnGlobe(locData.lat, locData.lng);
+            
+            const dateDisplay = locData.trips.length > 1 
+                ? `👣 重游了 ${locData.trips.length} 次` 
+                : (locData.trips[0].properties['date']?.date?.start || '未知日期');
+
+            const itemHTML = `
+                <div class="travel-item" onclick="flyToLocation(${locData.lat}, ${locData.lng}, '${locationName}')">
+                    <span class="travel-date">${dateDisplay}</span>
+                    <span>${locationName}</span>
+                </div>
+            `;
+
+            // 判断是否包含“马来西亚”或者“Malaysia”
+            if (locationName.includes('马来西亚') || locationName.includes('Malaysia')) {
+                localListContainer.innerHTML += itemHTML;
+            } else {
+                overseaListContainer.innerHTML += itemHTML;
+            }
+        }
+    } catch (error) {
+        console.error("❌ 后端连接失败：", error);
+    }
+}
+
+
+
+
+
+
+
     </script>
 </body>
 </html>
