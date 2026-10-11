@@ -24,7 +24,7 @@
             color: #F7E1D7; overflow: hidden;
         }
 
-        /* 🎬 居中的 Loading 视频与进度遮罩 */
+        /* 🎬 Loading 视频遮罩层 */
         #loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 99999; background: #020308;
@@ -34,29 +34,31 @@
         #loading-overlay.hidden {
             opacity: 0; pointer-events: none; transform: scale(1.08);
         }
-
-        /* 🎬 视频容器放大处理 (16:9 比例) */
-        .loading-video-container {
-            width: 480px; height: 270px;
-            max-width: 88vw; max-height: 48vh;
-            border-radius: 20px; overflow: hidden;
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 0 40px rgba(212, 175, 55, 0.3);
-            margin-bottom: 30px; background: #000;
-        }
         #loading-video {
-            width: 100%; height: 100%; object-fit: cover; display: block;
+            width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1; opacity: 0.6;
         }
-
         .loading-text {
-            font-size: 1.1rem; letter-spacing: 4px; color: var(--gold-main);
-            text-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
-            margin-bottom: 10px; font-weight: 300;
+            position: relative; z-index: 2; font-size: 1.2rem; letter-spacing: 4px; color: var(--gold-main);
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.8); animation: blink 1.5s ease-in-out infinite;
         }
+        @keyframes blink { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
 
-        .loading-percentage {
-            font-size: 1.4rem; font-weight: 600; color: #ffffff;
-            font-family: 'Inter', sans-serif; letter-spacing: 2px;
+        /* 🔊 左上角静音/音效开关按钮 */
+        #audio-control-btn {
+            position: fixed; top: 30px; left: 30px; z-index: 1000;
+            width: 50px; height: 50px; border-radius: 50%;
+            background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; font-size: 1.3rem; color: var(--gold-main);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+        #audio-control-btn:hover {
+            transform: scale(1.1);
+            border-color: var(--gold-main);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
         }
 
         #globe-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
@@ -65,17 +67,39 @@
         .site-header h1 { font-weight: 300; letter-spacing: 4px; font-size: 1.5rem; color: #F7E1D7; margin: 0; }
         .site-header p { font-size: 0.75rem; color: rgba(247, 225, 215, 0.5); letter-spacing: 2px; margin-top: 5px; }
 
-        #mascot-area { position: absolute; bottom: 40px; left: 40px; z-index: 10; }
-        .mascot { width: 160px; height: 160px; background: radial-gradient(circle at 30% 30%, #f3e5ab, var(--gold-main) 70%, #8a7322); border-radius: 50%; box-shadow: 0 0 25px rgba(212, 175, 55, 0.4); cursor: pointer; animation: float 3s ease-in-out infinite; display: flex; justify-content: center; align-items: center; font-weight: 600; font-size: 0.8rem; color: #050814; transition: transform 0.3s ease; user-select: none; }
-        .mascot:hover { transform: scale(1.08); box-shadow: 0 0 35px rgba(212, 175, 55, 0.7); }
-        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+        /* 🤖 放大后的左下角吉祥物 (MASCOT) 样式 */
+        #mascot-area { position: absolute; bottom: 45px; left: 45px; z-index: 10; }
+        .mascot { 
+            width: 85px; height: 85px; 
+            background: radial-gradient(circle at 30% 30%, #f3e5ab, var(--gold-main) 70%, #8a7322); 
+            border-radius: 50%; 
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.5); 
+            cursor: pointer; 
+            animation: float 3.5s ease-in-out infinite; 
+            display: flex; justify-content: center; align-items: center; 
+            font-weight: 600; font-size: 0.95rem; color: #050814; 
+            transition: transform 0.3s ease, box-shadow 0.3s ease; 
+            user-select: none; 
+        }
+        .mascot:hover { 
+            transform: scale(1.12); 
+            box-shadow: 0 0 45px rgba(212, 175, 55, 0.85); 
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-12px); } }
 
-        .travel-list { position: absolute; bottom: 80px; left: 0; width: 240px; background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 16px; padding: 12px 0; opacity: 0; visibility: hidden; transform: translateY(15px); transition: all 0.4s ease; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        .travel-list { 
+            position: absolute; bottom: 105px; left: 0; width: 260px; max-height: 380px; overflow-y: auto;
+            background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); 
+            border: 1px solid var(--glass-border); border-radius: 16px; padding: 12px 0; 
+            opacity: 0; visibility: hidden; transform: translateY(15px); transition: all 0.4s ease; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5); 
+        }
         #mascot-area:hover .travel-list { opacity: 1; visibility: visible; transform: translateY(0); }
         .travel-item { padding: 12px 20px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; border-left: 2px solid transparent; }
         .travel-item:hover { background: rgba(212, 175, 55, 0.12); color: var(--gold-main); border-left-color: var(--gold-main); padding-left: 24px; }
         .travel-date { font-size: 0.65rem; color: rgba(247, 225, 215, 0.45); margin-bottom: 2px; }
 
+        /* 四部分切换弹窗样式 */
         #memory-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -45%) scale(0.95); width: 85%; max-width: 950px; height: 75vh; background: var(--glass-bg); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid var(--glass-border); border-radius: 24px; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7); z-index: 100; display: flex; opacity: 0; visibility: hidden; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: none; overflow: hidden; }
         #memory-modal.active { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
         
@@ -100,42 +124,44 @@
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Part 2 网格卡片风格 */
         .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
-        .media-card { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 12px; overflow: hidden; padding: 10px; text-align: center; transition: transform 0.3s, border-color 0.3s; }
-        .media-card:hover { transform: translateY(-4px); border-color: var(--gold-main); }
+        .media-card { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 12px; overflow: hidden; padding: 10px; text-align: center; }
         .media-card img, .media-card iframe { width: 100%; border-radius: 8px; object-fit: cover; }
-        .media-card img { height: 160px; display: block; }
+        .media-card img { height: 160px; }
         
+        /* 🏷️ Part 4 纪念小物件展示（支持点击放大） */
         .png-showcase { display: flex; flex-wrap: wrap; gap: 25px; justify-content: center; align-items: center; padding: 20px; }
-        .png-item { width: 110px; height: 110px; background: rgba(255, 255, 255, 0.05); border: 1px dashed rgba(212, 175, 55, 0.4); border-radius: 50%; display: flex; justify-content: center; align-items: center; padding: 10px; transition: transform 0.3s; }
-        .png-item:hover { transform: scale(1.1); background: rgba(212, 175, 55, 0.1); }
-        .png-item img { max-width: 80%; max-height: 80%; object-fit: contain; }
+        .png-item { 
+            width: 120px; height: 120px; 
+            background: rgba(255, 255, 255, 0.05); 
+            border: 1px dashed rgba(212, 175, 55, 0.4); 
+            border-radius: 50%; 
+            display: flex; justify-content: center; align-items: center; 
+            padding: 12px; transition: all 0.3s ease; 
+            cursor: zoom-in; position: relative;
+        }
+        .png-item:hover { 
+            transform: scale(1.12); 
+            background: rgba(212, 175, 55, 0.15); 
+            border-color: var(--gold-main);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+        }
+        .png-item img { max-width: 85%; max-height: 85%; object-fit: contain; pointer-events: none; }
 		
-        /* 🔍 全局照片/视频放大查看器 (Lightbox) - 带左右翻页按钮 */
+        /* 全局照片/视频放大查看器 (Lightbox) */
         #media-lightbox {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.92); z-index: 9999;
+            background: rgba(0, 0, 0, 0.92); z-index: 99999;
             display: flex; justify-content: center; align-items: center;
             opacity: 0; visibility: hidden; transition: all 0.3s ease;
         }
         #media-lightbox.active { opacity: 1; visibility: visible; }
-        .lightbox-close { position: absolute; top: 30px; right: 40px; font-size: 2.5rem; color: #fff; cursor: pointer; opacity: 0.7; transition: opacity 0.3s; z-index: 10001; }
+        .lightbox-close { position: absolute; top: 30px; right: 40px; font-size: 2.8rem; color: #fff; cursor: pointer; opacity: 0.8; transition: opacity 0.3s; z-index: 100000; }
         .lightbox-close:hover { opacity: 1; color: var(--gold-main); }
-        #lightbox-img { max-width: 85%; max-height: 85vh; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); display: none; transition: opacity 0.3s; }
+        #lightbox-img { max-width: 90%; max-height: 88vh; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); display: none; object-fit: contain; }
         #lightbox-iframe { width: 90%; max-width: 420px; height: 85vh; border-radius: 16px; background: #000; display: none; }
 
-        /* Lightbox 翻页按钮 */
-        .lb-nav-btn {
-            position: absolute; top: 50%; transform: translateY(-50%);
-            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;
-            font-size: 2rem; padding: 15px 20px; border-radius: 50%; cursor: pointer;
-            transition: all 0.3s; z-index: 10000; user-select: none;
-        }
-        .lb-nav-btn:hover { background: var(--gold-main); color: #000; border-color: var(--gold-main); }
-        .lb-nav-btn.left { left: 40px; }
-        .lb-nav-btn.right { right: 40px; }
-
+        /* Part 1 & Part 2 轮播图统一样式 */
         .carousel-container { position: relative; width: 100%; max-width: 550px; margin: 0 auto; border-radius: 16px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.5); border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; background: #000; }
         .carousel-container img { width: 100%; display: block; object-fit: cover; max-height: 420px; }
         
@@ -151,103 +177,23 @@
         .iframe-overlay:hover { background: rgba(0,0,0,0.4); }
         .iframe-overlay::after { content: '🔍 点击全屏播放'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; opacity: 0; font-weight: bold; transition: opacity 0.3s; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
         .iframe-overlay:hover::after { opacity: 1; }
-
-
-        /* 导航总面板 */
-.travel-menu-panel {
-    position: absolute;
-    bottom: 80px;
-    left: 0;
-    width: 250px;
-    background: var(--glass-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--glass-border);
-    border-radius: 16px;
-    padding: 15px;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(15px);
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-}
-
-.travel-menu-panel.active {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-/* 一级分类按钮 */
-.menu-option-btn {
-    padding: 12px 15px;
-    margin-bottom: 8px;
-    background: rgba(212, 175, 55, 0.08);
-    border: 1px solid rgba(212, 175, 55, 0.2);
-    border-radius: 10px;
-    color: #F7E1D7;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.85rem;
-    transition: all 0.25s;
-}
-
-.menu-option-btn:hover {
-    background: rgba(212, 175, 55, 0.25);
-    color: var(--gold-main);
-    transform: translateX(3px);
-}
-
-/* 返回按钮 */
-.menu-back-btn {
-    font-size: 0.75rem;
-    color: var(--gold-main);
-    cursor: pointer;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px dashed rgba(212, 175, 55, 0.2);
-    transition: opacity 0.2s;
-}
-
-.menu-back-btn:hover {
-    opacity: 0.8;
-}
-
-/* 地点列表条目 */
-.travel-item {
-    padding: 10px 12px;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    flex-direction: column;
-    border-left: 2px solid transparent;
-    border-radius: 6px;
-}
-
-.travel-item:hover {
-    background: rgba(212, 175, 55, 0.12);
-    color: var(--gold-main);
-    border-left-color: var(--gold-main);
-    padding-left: 16px;
-}
     </style>
 </head>
 <body>
 
-    <!-- 🎬 Loading 遮罩层：居中视频 + 提示文字 + 实时%进度 -->
+    <!-- 🎬 Loading 视频与预加载遮罩 -->
     <div id="loading-overlay">
-        <div class="loading-video-container">
-            <video id="loading-video" autoplay loop muted playsinline src="loading.mp4"></video>
-        </div>
-        <div class="loading-text">LOADING MEMORY</div>
-        <div class="loading-percentage" id="loading-percent">0%</div>
+        <video id="loading-video" autoplay loop muted playsinline src="https://assets.mixkit.co/videos/preview/mixkit-stars-in-the-night-sky-4008-large.mp4"></video>
+        <div class="loading-text">LOADING MEMORIES...</div>
+    </div>
+
+    <!-- 🔊 左上角音效/静音控制按钮 -->
+    <div id="audio-control-btn" onclick="toggleAudio()" title="切换声音静音">
+        <span id="audio-icon">🔊</span>
     </div>
 
     <!-- 🎵 背景音乐 -->
-    <audio id="bgm" loop src="bgm.mp3"></audio>
+    <audio id="bgm" loop src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=ambient-piano-amp-strings-10711.mp3"></audio>
 
     <div class="site-header">
         <h1>OUR JOURNEYS</h1>
@@ -256,44 +202,14 @@
     
     <div id="globe-container"></div>
     
-<div id="mascot-area">
-    <!-- 展开后的级联菜单面板 -->
-    <div class="travel-menu-panel" id="travel-menu">
-        <!-- 一级菜单：选择分类 -->
-        <div class="menu-level-1" id="menu-category">
-            <div class="menu-option-btn" onclick="showSubMenu('local')">
-                <span>🇲🇾 Local (马来西亚)</span>
-                <span>➔</span>
-            </div>
-            <div class="menu-option-btn" onclick="showSubMenu('oversea')">
-                <span>✈️ Oversea (海外)</span>
-                <span>➔</span>
-            </div>
+    <div id="mascot-area">
+        <div class="travel-list">
+            <!-- 动态生成的列表会注入这里 -->
         </div>
-
-        <!-- 二级菜单：Local (马来西亚地点) -->
-        <div class="menu-level-2" id="menu-local" style="display: none;">
-            <div class="menu-back-btn" onclick="showCategoryMenu()">⬅️ 返回选择</div>
-            <div class="travel-list-content" id="local-list">
-                <!-- 动态注入马来西亚的地点列表 -->
-            </div>
-        </div>
-
-        <!-- 二级菜单：Oversea (海外地点) -->
-        <div class="menu-level-2" id="menu-oversea" style="display: none;">
-            <div class="menu-back-btn" onclick="showCategoryMenu()">⬅️ 返回选择</div>
-            <div class="travel-list-content" id="oversea-list">
-                <!-- 动态注入海外国家的地点列表 -->
-            </div>
-        </div>
+        <div class="mascot">GUIDE</div>
     </div>
 
-    <!-- 自定义 PNG 图标 -->
-    <div class="mascot" onclick="toggleTravelMenu()">
-        <img src="mascot.png" alt="GUIDE" style="width: 100%; height: 100%; object-fit: contain;">
-    </div>
-</div>
-
+    <!-- 升级后的四部分联动弹窗 -->
     <div id="memory-modal">
         <div class="modal-close" onclick="closeModal()">&times;</div>
         
@@ -310,23 +226,21 @@
 
         <div class="modal-body">
             <div id="part1" class="tab-content active"><div id="p1-content"></div></div>
-            <div id="part2" class="tab-content"><div class="media-grid" id="p2-content"></div></div>
+            <div id="part2" class="tab-content"><div id="p2-content"></div></div>
             <div id="part3" class="tab-content"><div class="media-grid" id="p3-content"></div></div>
             <div id="part4" class="tab-content"><div class="png-showcase" id="p4-content"></div></div>
         </div>
     </div>
 	
-    <!-- 全局放大查看器 (Lightbox) - 包含上一张/下一张控制 -->
+    <!-- 全局放大查看器 (Lightbox) -->
     <div id="media-lightbox">
         <div class="lightbox-close" onclick="closeLightbox()">&times;</div>
-        <button id="lb-prev-btn" class="lb-nav-btn left" onclick="navigateLightbox(-1)">&#10094;</button>
-        <img id="lightbox-img" src="" alt="放大照片">
+        <img id="lightbox-img" src="" alt="放大照片/纪念品">
         <iframe id="lightbox-iframe" src="" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen></iframe>
-        <button id="lb-next-btn" class="lb-nav-btn right" onclick="navigateLightbox(1)">&#10095;</button>
     </div>
 	
     <script>
-const container = document.getElementById('globe-container');
+        const container = document.getElementById('globe-container');
         const scene = new THREE.Scene();
 
         function latLonToVector3(lat, lon, radius) {
@@ -339,10 +253,7 @@ const container = document.getElementById('globe-container');
         }
 
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        // 初始镜头位置设得较远，用于做进场放大过度动画
-        const initialCameraPos = latLonToVector3(4.0, 102.0, 550);
-        const targetCameraPos = latLonToVector3(4.0, 102.0, 320);
-        camera.position.copy(initialCameraPos); 
+        camera.position.copy(latLonToVector3(4.0, 102.0, 320)); 
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -383,35 +294,19 @@ const container = document.getElementById('globe-container');
         scene.add(dirLight);
 
         let groupedTravelData = {};
+        let interactiveMarkers = []; // 存储用于点击检测的 3D 地标 Mesh
 
-        function preloadImagesWithProgress(urls) {
-            return new Promise((resolve) => {
-                if (!urls || urls.length === 0) {
-                    updatePercentUI(100);
-                    return resolve();
-                }
-
-                let loadedCount = 0;
-                const total = urls.length;
-
-                urls.forEach((url) => {
+        // 🖼️ 图片预加载辅助函数
+        function preloadImages(urls) {
+            return Promise.all(urls.map(url => {
+                return new Promise((resolve) => {
+                    if (!url) return resolve();
                     const img = new Image();
                     img.src = url;
-                    const handleLoad = () => {
-                        loadedCount++;
-                        const percent = Math.floor((loadedCount / total) * 100);
-                        updatePercentUI(percent);
-                        if (loadedCount >= total) resolve();
-                    };
-                    img.onload = handleLoad;
-                    img.onerror = handleLoad;
+                    img.onload = resolve;
+                    img.onerror = resolve; 
                 });
-            });
-        }
-
-        function updatePercentUI(percent) {
-            const el = document.getElementById('loading-percent');
-            if (el) el.innerText = percent + '%';
+            }));
         }
 
         async function fetchNotionData() {
@@ -419,17 +314,12 @@ const container = document.getElementById('globe-container');
                 const response = await fetch('/api/get-travels');
                 const data = await response.json();
                 
-                if (!data.results) {
-                    finishLoading();
-                    return;
-                }
+                if (!data.results) return;
 
                 groupedTravelData = {};
-                const localListContainer = document.getElementById('local-list');
-                const overseaListContainer = document.getElementById('oversea-list');
-                
-                if (localListContainer) localListContainer.innerHTML = '';
-                if (overseaListContainer) overseaListContainer.innerHTML = '';
+                interactiveMarkers = [];
+                const travelListContainer = document.querySelector('.travel-list');
+                travelListContainer.innerHTML = '';
                 
                 let allImageUrlsToPreload = [];
 
@@ -464,85 +354,120 @@ const container = document.getElementById('globe-container');
                     }
                 });
 
+                // 排序：对每一个地点的多次旅行按【最新到最旧】（降序）排序
+                let sortedLocationArray = [];
+
                 for (const locationName in groupedTravelData) {
                     const locData = groupedTravelData[locationName];
-                    locData.trips.sort((a, b) => a._parsedDate - b._parsedDate);
-
-                    createMarkerOnGlobe(locData.lat, locData.lng);
+                    locData.trips.sort((a, b) => b._parsedDate - a._parsedDate); // 最新在前
+                    locData.latestDate = locData.trips[0]._parsedDate;
                     
-                    const dateDisplay = locData.trips.length > 1 
-                        ? `👣 重游了 ${locData.trips.length} 次` 
-                        : (locData.trips[0].properties['date']?.date?.start || '未知日期');
-
-                    const itemHTML = `
-                        <div class="travel-item" onclick="flyToLocation(${locData.lat}, ${locData.lng}, '${locationName}')">
-                            <span class="travel-date">${dateDisplay}</span>
-                            <span>${locationName}</span>
-                        </div>
-                    `;
-
-         // 1. 判断该地点是否勾选了 Checkbox（海外/Oversea）
-// 遍历该地点下的 trips，只要有记录勾选了 overseaornot，或者取第一个 trip 的勾选状态
-const isOversea = locData.trips.some(trip => trip.properties['overseaornot']?.checkbox === true);
-
-// 2. 根据 Checkbox 状态渲染到对应列表中
-if (isOversea) {
-    if (overseaListContainer) overseaListContainer.innerHTML += itemHTML;
-} else {
-    if (localListContainer) localListContainer.innerHTML += itemHTML;
-}
+                    createMarkerOnGlobe(locData.lat, locData.lng, locationName);
+                    sortedLocationArray.push({ locationName, ...locData });
                 }
 
-                // 预加载所有照片并更新进度%
-                await preloadImagesWithProgress(allImageUrlsToPreload);
+                // 排序：左侧菜单里的地点也按【最新旅行时间】从新到旧排列
+                sortedLocationArray.sort((a, b) => b.latestDate - a.latestDate);
+
+                sortedLocationArray.forEach(item => {
+                    const dateDisplay = item.trips.length > 1 
+                        ? `👣 重游了 ${item.trips.length} 次` 
+                        : (item.trips[0].properties['date']?.date?.start || '未知日期');
+
+                    const itemHTML = `
+                        <div class="travel-item" onclick="flyToLocation(${item.lat}, ${item.lng}, '${item.locationName}')">
+                            <span class="travel-date">${dateDisplay}</span>
+                            <span>${item.locationName}</span>
+                        </div>
+                    `;
+                    travelListContainer.innerHTML += itemHTML;
+                });
+
+                await preloadImages(allImageUrlsToPreload);
                 finishLoading();
 
             } catch (error) {
                 console.error("❌ 后端连接失败：", error);
-                finishLoading();
+                finishLoading(); 
             }
         }
 
-        // ✨ 地球慢慢放大/摄像机平滑推近过度动画
-        function finishLoading() {
-            updatePercentUI(100);
-            setTimeout(() => {
-                const loadingOverlay = document.getElementById('loading-overlay');
-                loadingOverlay.classList.add('hidden');
-
-                // 使用 GSAP 让地球平滑推近变大
-                gsap.to(camera.position, {
-                    x: targetCameraPos.x,
-                    y: targetCameraPos.y,
-                    z: targetCameraPos.z,
-                    duration: 2.8,
-                    ease: "power3.out",
-                    onUpdate: () => controls.update()
-                });
-
-                // 播放背景音乐
-                const bgm = document.getElementById('bgm');
-                bgm.play().catch(() => {
-                    window.addEventListener('click', () => { bgm.play(); }, { once: true });
-                });
-            }, 300);
+        // 🔊 音频控制与静音逻辑
+        let isMuted = false;
+        function toggleAudio() {
+            const bgm = document.getElementById('bgm');
+            const icon = document.getElementById('audio-icon');
+            isMuted = !isMuted;
+            bgm.muted = isMuted;
+            icon.innerText = isMuted ? '🔇' : '🔊';
         }
 
-        function createMarkerOnGlobe(lat, lon) {
+        function finishLoading() {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            loadingOverlay.classList.add('hidden');
+
+            const bgm = document.getElementById('bgm');
+            bgm.play().catch(() => {
+                window.addEventListener('click', () => { bgm.play(); }, { once: true });
+            });
+        }
+
+        function createMarkerOnGlobe(lat, lon, locationName) {
             const pos = latLonToVector3(lat, lon, globeRadius + 0.5);
-            const markerGeo = new THREE.SphereGeometry(0.5, 16, 16);
+            
+            // 实体光点 (可碰撞点击)
+            const markerGeo = new THREE.SphereGeometry(1.0, 16, 16);
             const markerMat = new THREE.MeshBasicMaterial({ color: 0xffd700 });
             const marker = new THREE.Mesh(markerGeo, markerMat);
             marker.position.copy(pos);
+            marker.userData = { lat, lon, locationName };
             globeGroup.add(marker);
+            interactiveMarkers.push(marker);
 
-            const ringGeo = new THREE.RingGeometry(0.7, 1.4, 32);
-            const ringMat = new THREE.MeshBasicMaterial({ color: 0xd4af37, side: THREE.DoubleSide, transparent: true, opacity: 0.5 });
+            // 外围发光光环
+            const ringGeo = new THREE.RingGeometry(1.2, 2.2, 32);
+            const ringMat = new THREE.MeshBasicMaterial({ color: 0xd4af37, side: THREE.DoubleSide, transparent: true, opacity: 0.6 });
             const ring = new THREE.Mesh(ringGeo, ringMat);
             ring.position.copy(pos);
             ring.lookAt(new THREE.Vector3(0,0,0)); 
             globeGroup.add(ring);
         }
+
+        // 🎯 核心增强：3D 地图黄点点击与 Raycaster 射线检测
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        window.addEventListener('pointerdown', (e) => {
+            // 过滤非 Canvas 点击（例如点击 UI 弹窗时不触发 3D 射线）
+            if (e.target.tagName !== 'CANVAS') return;
+
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(interactiveMarkers, true);
+
+            if (intersects.length > 0) {
+                const targetMarker = intersects[0].object;
+                if (targetMarker.userData && targetMarker.userData.locationName) {
+                    const { lat, lon, locationName } = targetMarker.userData;
+                    flyToLocation(lat, lon, locationName);
+                }
+            }
+        });
+
+        // 鼠标悬浮在 3D 黄点上时变为手型 Cursor
+        window.addEventListener('pointermove', (e) => {
+            if (e.target.tagName !== 'CANVAS') return;
+
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(interactiveMarkers, true);
+
+            document.body.style.cursor = intersects.length > 0 ? 'pointer' : 'default';
+        });
 
         fetchNotionData();
 
@@ -565,15 +490,13 @@ if (isOversea) {
             });
         }
 
-        // 相册状态与 5s 自动轮播控制
+        // 相册状态管理
         let currentP1Index = 0;
         let p1PhotosArray = [];
-        let p1AutoPlayTimer = null;
-
-        let activeGalleryPhotos = [];
-        let activeGalleryIndex = 0;
-        let lightboxAutoPlayTimer = null;
-
+        
+        let currentP2Index = 0;
+        let p2PhotosArray = [];
+        
         let currentOpenLocation = ''; 
 
         const modal = document.getElementById('memory-modal');
@@ -609,7 +532,6 @@ if (isOversea) {
         }
 
         function renderTripContent(tripIndex) {
-            stopP1AutoPlay();
             const locData = groupedTravelData[currentOpenLocation];
             const row = locData.trips[tripIndex];
             const props = row.properties;
@@ -630,22 +552,23 @@ if (isOversea) {
             }
 
             p1PhotosArray = getUploadedImages('part1_photos');
-            activeGalleryPhotos = getUploadedImages('part2_photos');
-            const part4Pngs = getUploadedImages('part4_pngs');
+            p2PhotosArray = getUploadedImages('part2_photos');
+            const part4Pngs   = getUploadedImages('part4_pngs');
             const reelsText = props['part3_reels']?.rich_text[0]?.plain_text || '';
             const part3Reels = reelsText ? reelsText.split(/[,\n\s]+/).filter(url => url.includes('http')) : [];
 
             if (p1PhotosArray.length === 0) p1PhotosArray = ['https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600'];
             currentP1Index = 0; 
+            currentP2Index = 0;
 
-            // Part 1: 卡片轮播
+            // ✨ Part 1: 合照与回忆
             let p1HTML = `
                 <div class="part1-text" style="text-align: center; font-size: 1.1rem; line-height: 1.7; margin-bottom: 20px; color: #F7E1D7; font-weight: 300;">
                     ${memory}
                 </div>
                 <div class="carousel-container">
                     <img id="p1-main-img" src="${p1PhotosArray[0]}" alt="合照">
-                    <button class="zoom-btn" onclick="openLightbox('image', p1PhotosArray, currentP1Index)">🔍 放大</button>
+                    <button class="zoom-btn" onclick="openLightbox('image', p1PhotosArray[currentP1Index])">🔍 放大</button>
                     ${p1PhotosArray.length > 1 ? `
                         <button class="nav-btn left" onclick="changeP1Photo(-1)">&#10094;</button>
                         <button class="nav-btn right" onclick="changeP1Photo(1)">&#10095;</button>
@@ -653,16 +576,22 @@ if (isOversea) {
                 </div>
             `;
             document.getElementById('p1-content').innerHTML = p1HTML;
-            startP1AutoPlay();
 
-            // Part 2: 风景网格
+            // ✨ Part 2: 地方风光
             let p2HTML = '';
-            if (activeGalleryPhotos.length > 0) {
-                activeGalleryPhotos.forEach((url, idx) => {
-                    p2HTML += `<div class="media-card" style="cursor: zoom-in;" onclick="openLightbox('image', activeGalleryPhotos, ${idx})"><img src="${url}" alt="风景"></div>`;
-                });
+            if (p2PhotosArray.length > 0) {
+                p2HTML = `
+                    <div class="carousel-container">
+                        <img id="p2-main-img" src="${p2PhotosArray[0]}" alt="风光照片">
+                        <button class="zoom-btn" onclick="openLightbox('image', p2PhotosArray[currentP2Index])">🔍 放大</button>
+                        ${p2PhotosArray.length > 1 ? `
+                            <button class="nav-btn left" onclick="changeP2Photo(-1)">&#10094;</button>
+                            <button class="nav-btn right" onclick="changeP2Photo(1)">&#10095;</button>
+                        ` : ''}
+                    </div>
+                `;
             } else {
-                p2HTML = '<div style="color:rgba(247, 225, 215, 0.4); text-align: center; grid-column: 1 / -1; padding: 40px;">暂无风光照片</div>';
+                p2HTML = '<div style="color:rgba(247, 225, 215, 0.4); text-align: center; padding: 40px;">暂无风光照片</div>';
             }
             document.getElementById('p2-content').innerHTML = p2HTML;
 
@@ -677,115 +606,56 @@ if (isOversea) {
                     <div class="iframe-overlay" onclick="openLightbox('video', '${embedUrl}')"></div>
                 </div>`;
             });
-            document.getElementById('p3-content').innerHTML = p3HTML || '<div style="color:rgba(247, 225, 215, 0.4); text-align: center; grid-column: 1 / -1;">暂无 Vlog 视频</div>';
+            document.getElementById('p3-content').innerHTML = p3HTML || '<div style="color:rgba(247, 225, 215, 0.4); text-align: center;">暂无 Vlog 视频</div>';
 
-            // Part 4: PNG 小物件
+            // ✨ 核心增强 Part 4: 纪念小物件（点击可放大查看，带 X 关闭）
             let p4HTML = '';
             part4Pngs.forEach(url => {
-                p4HTML += `<div class="png-item"><img src="${url}" alt="纪念物件"></div>`;
+                p4HTML += `
+                <div class="png-item" onclick="openLightbox('image', '${url}')" title="点击放大查看纪念物">
+                    <img src="${url}" alt="纪念物件">
+                </div>`;
             });
             document.getElementById('p4-content').innerHTML = p4HTML || '<div style="color:rgba(247, 225, 215, 0.4); text-align: center;">暂无专属纪念物件</div>';
-        }
-
-        // Part 1 自动轮播
-        function startP1AutoPlay() {
-            stopP1AutoPlay();
-            if (p1PhotosArray.length > 1) {
-                p1AutoPlayTimer = setInterval(() => { changeP1Photo(1); }, 5000);
-            }
-        }
-        function stopP1AutoPlay() {
-            if (p1AutoPlayTimer) clearInterval(p1AutoPlayTimer);
         }
 
         function changeP1Photo(direction) {
             currentP1Index = (currentP1Index + direction + p1PhotosArray.length) % p1PhotosArray.length;
             const imgEl = document.getElementById('p1-main-img');
-            if (imgEl) imgEl.src = p1PhotosArray[currentP1Index];
+            imgEl.src = p1PhotosArray[currentP1Index];
         }
 
-        // Lightbox 查看器
+        function changeP2Photo(direction) {
+            currentP2Index = (currentP2Index + direction + p2PhotosArray.length) % p2PhotosArray.length;
+            const imgEl = document.getElementById('p2-main-img');
+            imgEl.src = p2PhotosArray[currentP2Index];
+        }
+
+        // --- 全局放大查看器 (Lightbox) ---
         const lightbox = document.getElementById('media-lightbox');
         const lbImg = document.getElementById('lightbox-img');
         const lbIframe = document.getElementById('lightbox-iframe');
-        const lbPrevBtn = document.getElementById('lb-prev-btn');
-        const lbNextBtn = document.getElementById('lb-next-btn');
 
-        let currentLightboxList = [];
-
-        function openLightbox(type, data, startIndex = 0) {
-            stopLightboxAutoPlay();
-            
+        function openLightbox(type, url) {
             if (type === 'image') {
-                if (Array.isArray(data)) {
-                    currentLightboxList = data;
-                    activeGalleryIndex = startIndex;
-                    lbImg.src = currentLightboxList[activeGalleryIndex];
-
-                    if (currentLightboxList.length > 1) {
-                        lbPrevBtn.style.display = 'block';
-                        lbNextBtn.style.display = 'block';
-                        startLightboxAutoPlay();
-                    } else {
-                        lbPrevBtn.style.display = 'none';
-                        lbNextBtn.style.display = 'none';
-                    }
-                } else {
-                    currentLightboxList = [data];
-                    lbImg.src = data;
-                    lbPrevBtn.style.display = 'none';
-                    lbNextBtn.style.display = 'none';
-                }
+                lbImg.src = url;
                 lbImg.style.display = 'block';
                 lbIframe.style.display = 'none';
-
             } else if (type === 'video') {
-                lbIframe.src = data;
+                lbIframe.src = url;
                 lbIframe.style.display = 'block';
                 lbImg.style.display = 'none';
-                lbPrevBtn.style.display = 'none';
-                lbNextBtn.style.display = 'none';
             }
-
             lightbox.classList.add('active');
         }
 
-        function navigateLightbox(direction) {
-            if (currentLightboxList.length <= 1) return;
-            activeGalleryIndex = (activeGalleryIndex + direction + currentLightboxList.length) % currentLightboxList.length;
-            lbImg.style.opacity = 0.3;
-            setTimeout(() => {
-                lbImg.src = currentLightboxList[activeGalleryIndex];
-                lbImg.style.opacity = 1;
-            }, 150);
-            startLightboxAutoPlay();
-        }
-
-        function startLightboxAutoPlay() {
-            stopLightboxAutoPlay();
-            if (currentLightboxList.length > 1) {
-                lightboxAutoPlayTimer = setInterval(() => { navigateLightbox(1); }, 5000);
-            }
-        }
-        function stopLightboxAutoPlay() {
-            if (lightboxAutoPlayTimer) clearInterval(lightboxAutoPlayTimer);
-        }
-
         function closeLightbox() {
-            stopLightboxAutoPlay();
             lightbox.classList.remove('active');
             setTimeout(() => {
                 lbImg.src = '';
                 lbIframe.src = '';
             }, 300);
         }
-
-        window.addEventListener('keydown', (e) => {
-            if (!lightbox.classList.contains('active')) return;
-            if (e.key === 'ArrowLeft') navigateLightbox(-1);
-            if (e.key === 'ArrowRight') navigateLightbox(1);
-            if (e.key === 'Escape') closeLightbox();
-        });
 
         lightbox.addEventListener('click', function(e) {
             if (e.target === lightbox) closeLightbox();
@@ -799,7 +669,6 @@ if (isOversea) {
         }
 
         function closeModal() { 
-            stopP1AutoPlay();
             modal.classList.remove('active'); 
             isAutoRotating = true; 
         }
@@ -817,31 +686,6 @@ if (isOversea) {
             camera.updateProjectionMatrix(); 
             renderer.setSize(window.innerWidth, window.innerHeight); 
         });
-
-        // 菜单切换逻辑
-        function toggleTravelMenu() {
-            const menu = document.getElementById('travel-menu');
-            menu.classList.toggle('active');
-            showCategoryMenu();
-        }
-
-        function showSubMenu(type) {
-            document.getElementById('menu-category').style.display = 'none';
-            if (type === 'local') {
-                document.getElementById('menu-local').style.display = 'block';
-                document.getElementById('menu-oversea').style.display = 'none';
-            } else {
-                document.getElementById('menu-oversea').style.display = 'block';
-                document.getElementById('menu-local').style.display = 'none';
-            }
-        }
-
-        function showCategoryMenu() {
-            document.getElementById('menu-category').style.display = 'block';
-            document.getElementById('menu-local').style.display = 'none';
-            document.getElementById('menu-oversea').style.display = 'none';
-        }
-
-        </script>
+    </script>
 </body>
 </html>
