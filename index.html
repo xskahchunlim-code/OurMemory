@@ -82,7 +82,7 @@
         .site-header h1 { font-weight: 300; letter-spacing: 4px; font-size: 1.5rem; color: #F7E1D7; margin: 0; }
         .site-header p { font-size: 0.75rem; color: rgba(247, 225, 215, 0.5); letter-spacing: 2px; margin-top: 5px; }
 
-        /* 🤖 进一步放大后的吉祥物 (MASCOT) + 星光特效 */
+        /* 🤖 吉祥物 (MASCOT) 区域 */
         #mascot-area { position: absolute; bottom: 35px; left: 35px; z-index: 10; }
         .mascot { 
             width: 115px; height: 115px; 
@@ -95,7 +95,7 @@
             position: relative;
         }
 
-        /* 🌟 星闪发光边缘动画（专门针对黑色/暗色 PNG 图标） */
+        /* 🌟 星闪发光边缘动画 */
         @keyframes starGlow {
             0%, 100% {
                 filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.75)) drop-shadow(0 0 22px rgba(255, 255, 255, 0.5));
@@ -110,10 +110,10 @@
         }
         @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-12px); } }
 
-        /* 导航总面板 */
+        /* 📍 导航总面板（可以通过修改 bottom 调整与吉祥物的距离） */
         .travel-menu-panel {
             position: absolute;
-            bottom: 130px; /* 根据吉祥物的新尺寸向上微调 */
+            bottom: 155px; /* 向上提拉间距，拉开与吉祥物的距离 */
             left: 0;
             width: 260px;
             max-height: 400px;
@@ -344,7 +344,7 @@
             </div>
         </div>
 
-        <!-- 自定义 PNG 图标 (放大 + 星光发光边框) -->
+        <!-- 自定义 PNG 图标 (吉祥物) -->
         <div class="mascot" onclick="toggleTravelMenu()">
             <img src="mascot.png" alt="GUIDE" style="width: 100%; height: 100%; object-fit: contain;">
         </div>
@@ -372,7 +372,7 @@
         </div>
     </div>
 	
-    <!-- 全局放大查看器 (Lightbox) - 包含上一张/下一张控制 -->
+    <!-- 全局放大查看器 (Lightbox) -->
     <div id="media-lightbox">
         <div class="lightbox-close" onclick="closeLightbox()">&times;</div>
         <button id="lb-prev-btn" class="lb-nav-btn left" onclick="navigateLightbox(-1)">&#10094;</button>
@@ -411,7 +411,7 @@
         controls.minDistance = 110; 
         controls.maxDistance = 450;
 
-        // 🎯 增强点：手势交互监听 — 旋转时暂停自转，10秒无操作后自动恢复
+        // 手势交互监听：拖拽手势停止 10 秒后，在未打开任何弹窗的前提下才恢复自转
         let autoRotateTimeout = null;
 
         controls.addEventListener('start', () => {
@@ -422,8 +422,10 @@
         controls.addEventListener('end', () => {
             if (autoRotateTimeout) clearTimeout(autoRotateTimeout);
             autoRotateTimeout = setTimeout(() => {
-                if (!modal.classList.contains('active')) {
-                    isAutoRotating = true; // 10 秒无交互后重新开启自转
+                const isModalOpen = modal.classList.contains('active');
+                const isLightboxOpen = lightbox.classList.contains('active');
+                if (!isModalOpen && !isLightboxOpen) {
+                    isAutoRotating = true; 
                 }
             }, 10000);
         });
@@ -455,7 +457,7 @@
         scene.add(dirLight);
 
         let groupedTravelData = {};
-        let interactiveMarkers = []; // 存储 3D Marker 数组
+        let interactiveMarkers = [];
 
         function preloadImagesWithProgress(urls) {
             return new Promise((resolve) => {
@@ -538,7 +540,6 @@
                     }
                 });
 
-                // 按日期【最新到最旧】倒序排列
                 let sortedLocationArray = [];
 
                 for (const locationName in groupedTravelData) {
@@ -582,7 +583,7 @@
             }
         }
 
-        // 🔊 音频控制与静音逻辑
+        // 🔊 音频控制
         let isMuted = false;
         function toggleAudio() {
             const bgm = document.getElementById('bgm');
@@ -632,7 +633,6 @@
             globeGroup.add(ring);
         }
 
-        // 3D 地图黄点点击 Raycaster 检测
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
 
@@ -687,7 +687,6 @@
             });
         }
 
-        // 相册状态与 10 秒倒计时控制
         let currentP1Index = 0;
         let p1PhotosArray = [];
         let p1AutoPlayTimer = null;
@@ -696,7 +695,6 @@
         let activeGalleryIndex = 0;
         let lightboxAutoPlayTimer = null;
 
-        // 全局定义 Part 4 数组变量（修复点击不出弹窗的 Bug）
         let p4PngsArray = []; 
 
         let currentOpenLocation = ''; 
@@ -731,6 +729,7 @@
             renderTripContent(0);
             switchTab('part1');
             modal.classList.add('active');
+            isAutoRotating = false; // 明确停用自转
         }
 
         function renderTripContent(tripIndex) {
@@ -756,7 +755,7 @@
 
             p1PhotosArray = getUploadedImages('part1_photos');
             activeGalleryPhotos = getUploadedImages('part2_photos');
-            p4PngsArray = getUploadedImages('part4_pngs'); // 赋予全局变量
+            p4PngsArray = getUploadedImages('part4_pngs');
             
             const reelsText = props['part3_reels']?.rich_text[0]?.plain_text || '';
             const part3Reels = reelsText ? reelsText.split(/[,\n\s]+/).filter(url => url.includes('http')) : [];
@@ -805,7 +804,7 @@
             });
             document.getElementById('p3-content').innerHTML = p3HTML || '<div style="color:rgba(247, 225, 215, 0.4); text-align: center; grid-column: 1 / -1;">暂无 Vlog 视频</div>';
 
-            // 🎯 增强点：Part 4 PNG 使用全局数组变量渲染，点击完美弹框
+            // Part 4: PNG 纪念小物件
             let p4HTML = '';
             p4PngsArray.forEach((url, idx) => {
                 p4HTML += `
@@ -816,7 +815,6 @@
             document.getElementById('p4-content').innerHTML = p4HTML || '<div style="color:rgba(247, 225, 215, 0.4); text-align: center;">暂无专属纪念物件</div>';
         }
 
-        // ⏱️ 增强点：10 秒无点击后自动播放，点击即重置 10 秒定时器
         function startP1AutoPlay() {
             stopP1AutoPlay();
             if (p1PhotosArray.length > 1) {
@@ -831,7 +829,7 @@
             currentP1Index = (currentP1Index + direction + p1PhotosArray.length) % p1PhotosArray.length;
             const imgEl = document.getElementById('p1-main-img');
             if (imgEl) imgEl.src = p1PhotosArray[currentP1Index];
-            startP1AutoPlay(); // 用户操作后，重新倒计时 10 秒
+            startP1AutoPlay(); 
         }
 
         // Lightbox 查看器控制
@@ -845,6 +843,7 @@
 
         function openLightbox(type, data, startIndex = 0) {
             stopLightboxAutoPlay();
+            isAutoRotating = false; // 打开全屏大图时也绝对停止自转
             
             if (type === 'image') {
                 if (Array.isArray(data)) {
@@ -855,7 +854,7 @@
                     if (currentLightboxList.length > 1) {
                         lbPrevBtn.style.display = 'block';
                         lbNextBtn.style.display = 'block';
-                        startLightboxAutoPlay(); // 开启 10s 倒计时
+                        startLightboxAutoPlay(); 
                     } else {
                         lbPrevBtn.style.display = 'none';
                         lbNextBtn.style.display = 'none';
@@ -888,10 +887,9 @@
                 lbImg.src = currentLightboxList[activeGalleryIndex];
                 lbImg.style.opacity = 1;
             }, 150);
-            startLightboxAutoPlay(); // 用户手动翻页后，重新倒计时 10 秒
+            startLightboxAutoPlay(); 
         }
 
-        // ⏱️ 增强点：放大查看模式下的 10 秒空闲自动翻页
         function startLightboxAutoPlay() {
             stopLightboxAutoPlay();
             if (currentLightboxList.length > 1) {
@@ -933,16 +931,27 @@
             stopP1AutoPlay();
             modal.classList.remove('active'); 
             
-            // 关闭弹窗 10 秒后自动恢复自转（避免关闭弹窗时跳变）
+            // 只有当弹窗和 Lightbox 均被完全关闭 10 秒后才恢复自转
             if (autoRotateTimeout) clearTimeout(autoRotateTimeout);
             autoRotateTimeout = setTimeout(() => {
-                isAutoRotating = true; 
+                const isModalOpen = modal.classList.contains('active');
+                const isLightboxOpen = lightbox.classList.contains('active');
+                if (!isModalOpen && !isLightboxOpen) {
+                    isAutoRotating = true; 
+                }
             }, 10000);
         }
 
+        // 🎯 核心控制：只要有任意弹窗处于激活状态，动画循环中就不旋转地球
         function animate() { 
             requestAnimationFrame(animate); 
-            if (isAutoRotating) globeGroup.rotation.y += 0.0010; 
+            
+            const isModalActive = modal.classList.contains('active');
+            const isLightboxActive = lightbox.classList.contains('active');
+
+            if (isAutoRotating && !isModalActive && !isLightboxActive) {
+                globeGroup.rotation.y += 0.0010; 
+            }
             controls.update(); 
             renderer.render(scene, camera); 
         }
@@ -954,7 +963,7 @@
             renderer.setSize(window.innerWidth, window.innerHeight); 
         });
 
-        // 菜单逻辑
+        // 菜单切换逻辑
         function toggleTravelMenu() {
             const menu = document.getElementById('travel-menu');
             menu.classList.toggle('active');
